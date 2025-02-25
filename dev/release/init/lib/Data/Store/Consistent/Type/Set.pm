@@ -10,12 +10,12 @@ use Data::Store::Consistent::Type::Definition;
 sub new {
     my $pkg = shift;
     my $set = {};
-    compile($set, $_) for @Data::Store::Consistent::Type::Definition::list;
+    compile_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::list;
     bless $set;
 }
 
 
-sub compile {
+sub compile_type_def {
     my ($self, $name, $help, $condition, $parent, $default) = @_;
     if (ref $name eq 'HASH'){
         $help = $name->{'help'};
@@ -35,17 +35,20 @@ sub compile {
     $default = $self->{$parent}{'default_value'} unless defined $default;
     my $checks = [$help, $condition];
     $checks = [@{$self->{$parent}{'checks'}}, @$checks] if defined $parent;
+
     my $source = '';
     for (my $i = 0; $i < @$checks; $i+=2) {
         $source .= 'return "value $value'." needed to be of type $name, but failed test: $checks->[$i]\" unless $checks->[$i+1];"
     }
     $source = 'sub { my( $value ) = @_; no warnings "all";'. $source . "return ''}";
+
     my $coderef = eval $source;
     return "type '$name' condition source 'code' - '$source' - could not eval because: $@ !" if $@;
+
     $self->{$name} = { parent => $parent, default_value => $default, checks => $checks, ref => $coderef };
 }
 
-sub get_checker {
+sub get_type_checker {
     my ($self, $name, $value) = @_;
     return "type check got no name as first argument" unless defined $name and $name;
     return "type $name is not element of this set" unless exists $self->{ $name };

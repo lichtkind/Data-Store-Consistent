@@ -1,15 +1,17 @@
 
-# extendable collection of simple and parametric type objects (2 name spaces) + dependency resolver
-# store shortcut symbols correlating to base names independent of parameter type
-#       open sets ($self->{open} eq 'open') cannot be closed (like normal == 0 | 1 = ?)
+# extendable collection of type objects came from D::S::C::Type
 
 package Data::Store::Consistent::Type::Set;
-use v5.18;
+use v5.12;
 use warnings;
-our $VERSION = 0.3;
-use Kephra::Base::Data::Type::Factory ':all';
-
-########################################################################
+use Scalar::Util qw/blessed looks_like_number/;
+use Data::Store::Consistent::Type::Definition;
 
 
-5;
+sub new { }                                                            --> .
+sub compile_type_def { } ~name, ~help, ~condition, ~parent -- $default --> .type
+sub get_type_checker { } ~name                                         --> &checker
+sub has_type         { } ~name                                         --> ?
+
+
+1;

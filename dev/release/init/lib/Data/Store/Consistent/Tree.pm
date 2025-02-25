@@ -2,6 +2,9 @@
 #
 
 package Data::Store::Consistent::Tree;
+use Data::Store::Consistent::Node::Inner;
+use Data::Store::Consistent::Node::Outer;
+use Data::Store::Consistent::Node::Root;
 
 sub read {
     my ($self ) = @_;

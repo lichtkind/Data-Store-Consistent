@@ -9,3 +9,36 @@ IO of subtrees
 
 
 name Data::Store::Consistent
+
+
+schema:
+
+    leaves hold data
+    nodes hold nodes or leaves
+
+    type => basic_name | 'ARRAY'| 'hash'
+    description => 'help text'
+    default_value => ... fall back on type default value
+
+    leave : type, default_value?, description ?
+    node : type, children, description ?,
+
+
+
+
+structure:
+
+   root: data, types,
+
+    read_callbacks
+    write_callbacks
+
+    leave : type, default_value?, description ?
+    node : type, children, description ?,
+
+
+
+
+callback:
+
+    $name, $trigger, $target, $code

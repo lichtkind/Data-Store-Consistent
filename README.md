@@ -58,6 +58,10 @@
 
 ### PREREQUISITES
 
+    Perl 5.12 including some core modules
+    Scalar::Util
+
+
 [SEE ALSO](https://lichtkind.de/code)
 
 [CHANGES](https://github.com/lichtkind/Data-Store-Consitent/blob/main/Changes) (with roadmap)

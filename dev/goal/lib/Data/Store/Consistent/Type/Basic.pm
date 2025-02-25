@@ -9,17 +9,20 @@ no warnings 'experimental::smartmatch';
 # compiled to  : {check => ['not a reference', 'not ref $_[0]', '0 or 1', '$_[0] eq 0 or $_[0] eq 1'], parents => ['value']
 #                 coderef => eval{ sub{ return $_[0] 'failed not a reference' unless not ref $_[0]; ...; 0} } }
 
-package KBOS::Data::Type::Basic;
-our $VERSION = 1.9;
+package
+#
+
+package Data::Store::Consistent::Type::Basic;
+our $VERSION = 2;
 use Scalar::Util qw/blessed looks_like_number/;
 
 #### construct $ destruct ######################################################
 sub _unhash_arg_ {
-    ref $_[0] eq 'HASH' 
-        ? ($_[0]->{'name'}, $_[0]->{'help'}, $_[0]->{'code'}, $_[0]->{'parent'}, $_[0]->{'default'} ) 
+    ref $_[0] eq 'HASH'
+        ? ($_[0]->{'name'}, $_[0]->{'help'}, $_[0]->{'code'}, $_[0]->{'parent'}, $_[0]->{'default'} )
         : @_;
 }
-sub new {        # ~name ~help - ~code .parent $default  --> .type | ~errormsg 
+sub new {        # ~name ~help - ~code .parent $default  --> .type | ~errormsg
     my $pkg = shift;
     my ($name, $help, $code, $parent, $default) = _unhash_arg_(@_);
     $code //= '';
@@ -27,14 +30,14 @@ sub new {        # ~name ~help - ~code .parent $default  --> .type | ~errormsg
     return $name_error if $name_error;
     return "'parent' of basic type '$name' has to be an instance of ".__PACKAGE__ if defined $parent and ref $parent ne __PACKAGE__;
     return "definition of basic type '$name' misses description under the key 'help'" unless defined $help;
-    return "definition of basic type '$name' misses code either from key 'code' or 'parent'" 
+    return "definition of basic type '$name' misses code either from key 'code' or 'parent'"
         unless $code or (ref $parent and (exists $parent->{'code'} or exists $parent->{'checks'}));
     my $checks = [];
     my $parents = [];
     if (defined $parent){
         @$checks = @{$parent->source};
         $default //= $parent->default_value;
-        push @$parents, $parent->ID, $parent->parents; 
+        push @$parents, $parent->ID, $parent->parents;
     }
     if ($code) {  push @$checks, $help, $code }
     else       { $checks->[-2] = $help  }
@@ -65,8 +68,8 @@ sub help            { $_[0]->{'checks'}[-2] }      # _                  -->  ~he
 sub code            { $_[0]->{'checks'}[-1] }      # _                  -->  ~code
 sub parents         { @{$_[0]->{'parents'}} }      # _                  -->  @.parent~name
 sub parameter       { '' }                         # _                  -->  ''  # make API compatible
-sub has_parent      { 
-    defined $_[1] ? ($_[1] ~~ $_[0]->{'parents'}) 
+sub has_parent      {
+    defined $_[1] ? ($_[1] ~~ $_[0]->{'parents'})
                   : int @{$_[0]->{'parents'}} > 0 }# _  ~parent         -->  ?
 sub source          { $_[0]->{'checks'} }          # _                  -->  @checks
 sub default_value   { $_[0]->{'default'} }         # _                  -->  $default

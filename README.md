@@ -58,7 +58,7 @@
 
 ### PREREQUISITES
 
-[SEE ALSO](https://lichtkind/code)
+[SEE ALSO](https://lichtkind.de/code)
 
 [CHANGES](https://github.com/lichtkind/Data-Store-Consitent/blob/main/Changes) (with roadmap)
 

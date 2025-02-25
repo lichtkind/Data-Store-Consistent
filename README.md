@@ -10,6 +10,7 @@
 
 
     This is the landing page for the user documentation on github.
+    Please use the link above to visit the de facto hompage of the project.
     There is also a download link on the left side under "Tools".
 
 

@@ -61,9 +61,9 @@
 
 
 
-[CHANGES](https://github.com/lichtkind/Graphics-Color-Toolkit/blob/main/Changes) (with roadmap)
+[CHANGES](https://github.com/lichtkind/Data-Store-Consitent/blob/main/Changes) (with roadmap)
 
-[CONTRIBUTING](https://github.com/lichtkind/Graphics-Color-Toolkit/blob/main/CONTRIBUTING)
+[CONTRIBUTING](https://github.com/lichtkind/Data-Store-Consitent/blob/main/CONTRIBUTING)
 
 
 ### AUTHOR
@@ -73,8 +73,7 @@
 
 ### COPYRIGHT
 
-    Copyright(c) 2022-23 by Herbert Breunung
+    Copyright(c) 2025 by Herbert Breunung
 
-    All rights reserved.  This program is free software; you can
-    redistribute it and/or modify it under the same terms as Perl
-    itself.
+    All rights reserved. This program is free software
+    and can be used and distributed under the GPL 3 licence.

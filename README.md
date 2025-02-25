@@ -6,11 +6,10 @@
 
     0.0
 
-[on CPAN](https://metacpan.org/pod/Data::Store::Consitent)
-
+[Home on CPAN](https://metacpan.org/pod/Data::Store::Consitent)
 
     This is the landing page for the user documentation on github.
-    Please use the link above to visit the de facto hompage of the project.
+    Please use the link above to visit the de facto homepage of the project.
     There is also a download link on the left side under "Tools".
 
 
@@ -59,7 +58,7 @@
 
 ### PREREQUISITES
 
-
+[SEE ALSO](https://lichtkind/code)
 
 [CHANGES](https://github.com/lichtkind/Data-Store-Consitent/blob/main/Changes) (with roadmap)
 
@@ -75,5 +74,5 @@
 
     Copyright(c) 2025 by Herbert Breunung
 
-    All rights reserved. This program is free software
-    and can be used and distributed under the GPL 3 licence.
+    All rights reserved.  This program is free software;
+    you can redistribute it and/or modify it under GPL version 3

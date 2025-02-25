@@ -58,13 +58,6 @@
 
 ### PREREQUISITES
 
-    Carp 1.35 or higher
-
-    Optionally modules of the Graphics::ColorNames::* namespace are
-    required if your color definitions calls for them.
-    (see POD chapter: new( 'standard:color' ) for details)
-    Get them all by Bundle::Graphics::ColorNames.
-
 
 
 [CHANGES](https://github.com/lichtkind/Graphics-Color-Toolkit/blob/main/Changes) (with roadmap)

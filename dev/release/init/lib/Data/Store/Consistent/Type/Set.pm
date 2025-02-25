@@ -10,20 +10,19 @@ use Data::Store::Consistent::Type::Definition;
 sub new {
     my $pkg = shift;
     my $set = {};
-    compile_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::list;
+    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::list;
     bless $set;
 }
 
 
-sub compile_type_def {
+sub add_type_def {
+    my ($self, $def) = @_;
+    return unless ref $def eq 'HASH' and exists, $def->{'name'} and exists $def->{'help'};
+    $self->add_type( $def->{'name'}, $def->{'help'}, $def->{'code'}, $def->{'parent'}, $def->{'default'} );
+}
+
+sub add_type {
     my ($self, $name, $help, $condition, $parent, $default_value) = @_;
-    if (ref $name eq 'HASH'){
-        $help = $name->{'help'};
-        $condition = $name->{'code'};
-        $parent = $name->{'parent'};
-        $default_value = $name->{'default'};
-        $name = $name->{'name'};
-    }
     return 'type misses name'                      unless defined $name and $name and not ref $name;
     return "type $name misses help text"           unless defined $help and $help and not ref $help;
     return "type $name misses source code of condition" unless (defined $condition and $condition and not ref $condition)
@@ -50,16 +49,23 @@ sub compile_type_def {
     return "type '$name' default value triggers type checks: $error!" if $error;
 
     $self->{$name} = { parent => $parent, default_value => $default_value, checks => $checks, coderef => $coderef };
+    0;
 }
 
 sub get_type_checker {
-    my ($self, $name, $value) = @_;
-    return "type check got no name as first argument" unless defined $name and $name;
+    my ($self, $name) = @_;
+    return "need a type name as first argument" unless defined $name and $name;
     return "type $name is not element of this set" unless exists $self->{ $name };
     return $self->{ $name }{'coderef'};
 }
 
-sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
+sub get_default_value {
+    my ($self, $name) = @_;
+    return "need a type name as first argument" unless defined $name and $name;
+    return "type $name is not element of this set" unless exists $self->{ $name };
+    return $self->{ $name }{'default_value'};
+}
 
+sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
 
 1;

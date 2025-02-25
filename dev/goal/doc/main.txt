@@ -1,0 +1,11 @@
+HoAoH store of data
+restricted read and write access
+r and W events
+that trigger callbacks
+prevent circular deps
+
+typed (input checks)
+IO of subtrees
+
+
+name Data::Store::Consistent

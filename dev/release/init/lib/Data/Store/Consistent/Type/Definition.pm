@@ -8,13 +8,13 @@ use utf8;
 
 our @list = (
  {name=> 'any',        help=> 'accepts any value',       code=> '1',                                                 default=> '', },
- {name=> 'value',      help=> 'defined value',           code=> 'defined $value',                                    default=> '', },
+ {name=> 'value',      help=> 'defined value',           code=> 'defined $value',                                    default=> '', equality=> '$a eq $b', },
  {name=> 'no_ref',     help=> 'not a reference',         code=> 'not ref $value',              parent=> 'value',                   },
  {name=> 'bool',       help=> '0 or 1',                  code=> '$value eq 0 or $value eq 1',  parent=> 'no_ref',    default=> 0,  },
- {name=> 'num',        help=> 'any type of number',      code=> 'looks_like_number($value)',   parent=> 'no_ref',    default=> 0,  },
+ {name=> 'num',        help=> 'any type of number',      code=> 'looks_like_number($value)',   parent=> 'no_ref',    default=> 0,  equality=> '$a == $b', },
  {name=> 'pos_num',    help=> 'a number >= 0',           code=> '$value >= 0',                 parent=> 'num'                      },
  {name=> 'spos_num',   help=> 'a number > 0',            code=> '$value > 0',                  parent=> 'num',       default=> 1,  },
- {name=> 'int',        help=> 'number without decimals', code=> 'int($value) == $value',       parent=> 'no_ref',    default=> 0,  },
+ {name=> 'int',        help=> 'number without decimals', code=> 'int($value) == $value',       parent=> 'no_ref',    default=> 0,  equality=> '$a == $b', },
  {name=> 'pos_int',    help=> 'integer greater equal 0', code=> '$value >= 0',                 parent=> 'int',                     },
  {name=> 'spos_int',   help=> 'integer > 0',             code=> '$value > 0',                  parent=> 'int',       default=> 1,  },
  {name=> 'str',        help=> 'string of characters',                                          parent=> 'no_ref',                  },

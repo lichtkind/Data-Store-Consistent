@@ -6,12 +6,8 @@ use v5.12;
 use warnings;
 use Scalar::Util qw/blessed looks_like_number/;
 
-#### construct $ destruct ######################################################
-sub _unhash_arg_ {
-    ref $_[0] eq 'HASH'
-        ? ($_[0]->{'name'}, $_[0]->{'help'}, $_[0]->{'code'}, $_[0]->{'parent'}, $_[0]->{'default'} )
-        : @_;
-}
+########################################################################
+
 sub new {        # ~name ~help - ~code .parent $default  --> .type | ~errormsg
     my $pkg = shift;
     my ($name, $help, $code, $parent, $default) = _unhash_arg_(@_);

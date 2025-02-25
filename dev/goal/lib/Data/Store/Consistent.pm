@@ -5,8 +5,10 @@ package Data::Store::Consistent;
 
 
 sub new {
-    my ($pkg, $data, $schema) = @_;
-
+    my ($pkg, $schema, $data) = @_;
+    # eval args
+    # eval schema
+    # load data
 }
 
 sub read {
@@ -25,6 +27,7 @@ sub write {
 }
 sub get_node {
     my ($self, $node_ID, $data) = @_;
+    # node exists ?
 }
 
 

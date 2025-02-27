@@ -4,13 +4,12 @@ use warnings;
 # bundle all type related functionality
 
 package Data::Store::Consistent::Type;
-
 use Data::Store::Consistent::Type::Basic;
 use Data::Store::Consistent::Type::Parametric;
 use Data::Store::Consistent::Type::Array;
 use Data::Store::Consistent::Type::Hash;
 
-################################################################################
+########################################################################
 
 
 sub add {

@@ -1,5 +1,5 @@
 
-# extendable collection of type objects came from D::S::C::Type
+# data type like bool, int, num, str, etc
 
 package Data::Store::Consistent::Type::Basic;
 use v5.12;
@@ -14,12 +14,11 @@ sub new {
     bless $set;
 }
 
-
 sub add_type_def {
     my ($self, $def) = @_;
     return unless ref $def eq 'HASH' and exists $def->{'name'} and exists $def->{'help'};
-    add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'},
-                    $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
+    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'},
+                     $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
 }
 
 sub add_type {
@@ -35,7 +34,10 @@ sub add_type {
                      unless (defined $default_value and not ref $default_value) or $has_parent;
     return "type $name misses equality chacker code or parent"
                      unless (defined $equality and $equality and not ref $equality) or $has_parent;
-
+    $self->_add_type( $name, $help, $condition, $parent, $default_value, $equality );
+}
+sub _add_type {
+    my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
     $default_value = $self->{$parent}{'default_value'} unless defined $default_value;
 
     my $checks = (defined $condition) ? [[$help, $condition]] : [];
@@ -67,6 +69,7 @@ sub add_type {
     0;
 }
 
+########################################################################
 sub get_type_property {
     my ($self, $name, $property) = @_;
     return "need a type name as first argument" unless defined $name and $name;
@@ -80,4 +83,5 @@ sub get_type_property {
 
 sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
 
+########################################################################
 1;

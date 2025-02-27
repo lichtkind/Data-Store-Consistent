@@ -4,15 +4,16 @@
 package Data::Store::Consistent;
 use v5.12;
 use warnings;
-use Data::Store::Consistent::Tree;
-use Data::Store::Consistent::Type::Set;
+use Data::Store::Consistent::Type;
 use Data::Store::Consistent::Schema;
 
 sub new {
-    my ($pkg, $schema, $data) = @_;
+    my ($pkg, $schema, $types, $actions) = @_;
     # eval args
+    # check types
+    # eval types
     # eval schema
-    # load data
+    # bless {root => }
 }
 
 sub add_type {
@@ -30,11 +31,6 @@ sub remove_type {
     # exists name
 }
 
-sub add_schema {
-    my ($pkg, $schema) = @_;
-    # eval schema
-    # replace it
-}
 
 sub add_action {
     my ($self, $name, $trigger, $target, $code) = @_;

@@ -42,3 +42,14 @@ structure:
 callback:
 
     $name, $trigger, $target, $code
+
+
+bool
+str
+num
+int
+
+enum()
+int({1,})
+pattern : @[$nr]<str{$len}>
+

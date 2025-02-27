@@ -17,7 +17,7 @@ sub new {
 sub add_type_def {
     my ($self, $def) = @_;
     return unless ref $def eq 'HASH' and exists $def->{'name'} and exists $def->{'help'};
-    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'}, $def->{'parameter'},
+    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'}, $def->{'param'},
                      $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
 }
 

@@ -1,5 +1,5 @@
 
-# main module
+# main module, public API
 
 package Data::Store::Consistent;
 use v5.12;
@@ -9,26 +9,16 @@ use Data::Store::Consistent::Schema;
 
 sub new {
     my ($pkg, $schema, $types, $actions) = @_;
-    # eval args
+    # check args
     # check types
+    # check actions
+    # check schema
+    # check check action cycles
     # eval types
-    # eval schema
+    # eval schema: create tree from schema
+    # eval actions
+    #
     # bless {root => }
-}
-
-sub add_type {
-    my ($self, $name, $help, $code, $parent -- $default ) = @_; # $parent can be undef when $default exists
-    # check info
-    # name free
-    # compile type
-    # return error if
-    # insert type into set
-    # return 1;
-}
-
-sub remove_type {
-    my ($self, $name) = @_;
-    # exists name
 }
 
 

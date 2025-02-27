@@ -6,7 +6,7 @@ use v5.12;
 use warnings;
 use utf8;
 
-our @list = (
+our @basic = (
  {name=> 'any',        help=> 'accepts any value',       code=> '1',                                                 default=> '', },
  {name=> 'value',      help=> 'defined value',           code=> 'defined $value',                                    default=> '', equality=> '$a eq $b', },
  {name=> 'no_ref',     help=> 'not a reference',         code=> 'not ref $value',              parent=> 'value',                   },

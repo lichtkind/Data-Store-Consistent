@@ -54,7 +54,6 @@ sub _add_type {
     return "type '$name' default value triggers type checks: $error!" if $error;
 
     $equality      = $self->{$parent}{'equality'} unless defined $equality;
-
     my $eq_ref;
     if (defined $equality) {
         my $eq_source = 'sub {($a, $b) = @_; return '.$equality.' }';
@@ -63,6 +62,9 @@ sub _add_type {
     } else {
         $eq_ref = $self->{$parent}{'equality'}
     }
+
+    $parent = [$parent, @{$self->{$parent}{'parent'}}] if exists $self->{$parent}{'parent'};
+    $parent = [$parent] unless ref $parent;
 
     $self->{$name} = { parent => $parent, default_value => $default_value,
                        checks => $checks, type_check => $coderef, eqality => $eq_ref };

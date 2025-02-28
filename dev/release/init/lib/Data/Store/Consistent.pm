@@ -9,6 +9,9 @@ use Data::Store::Consistent::Schema;
 
 sub new {
     my ($pkg, $schema, $types, $actions) = @_;
+    return unless ref $schema eq 'HASH'
+           and (not defined $types or ref $types eq 'ARRAY')
+           and (not defined $actions or ref $actions eq 'ARRAY');
     # check args
     # check types
     # check actions

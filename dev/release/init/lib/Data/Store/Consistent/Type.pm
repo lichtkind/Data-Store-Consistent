@@ -1,9 +1,9 @@
-use v5.20;
-use warnings;
 
 # bundle all type related functionality
 
 package Data::Store::Consistent::Type;
+use v5.12;
+use warnings;
 use Data::Store::Consistent::Type::Basic;
 use Data::Store::Consistent::Type::Parametric;
 use Data::Store::Consistent::Type::Array;

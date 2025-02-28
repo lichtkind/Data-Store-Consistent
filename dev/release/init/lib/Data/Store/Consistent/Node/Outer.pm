@@ -1,7 +1,7 @@
 
 # data holding tree leave
 
-package Data::Store::Consistent::Node;
+package Data::Store::Consistent::Node::Outer;
 use v5.12;
 use warnings;
 use Data::Store::Consistent::Type::Set;

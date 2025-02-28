@@ -16,12 +16,16 @@ schema:
     leaves hold data
     nodes hold nodes or leaves
 
-    type => basic_name | 'ARRAY'| 'hash'
-    description => 'help text'
-    default_value => ... fall back on type default value
+ = inner:
+    - help: ~
+    - children: {}
 
-    leave : type, default_value?, description ?
-    node : type, children, description ?,
+ = outer:
+    - help: ~
+    - type: ~typename | ~typedef
+    - ?default_value: $               # optional when type name given | to init
+    - ?writer: &
+    - $write_trigger: @node_path      # trigger writer when on of these nodes changes
 
 
 
@@ -44,12 +48,8 @@ callback:
     $name, $trigger, $target, $code
 
 
-bool
-str
-num
-int
 
 enum()
-int({1,})
+spos_int : int({1,})
 pattern : @[$nr]<str{$len}>
-
+color: @[3]<int{0,255}>

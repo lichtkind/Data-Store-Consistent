@@ -12,11 +12,7 @@ our @basic = (
  {name=> 'no_ref',    help=> 'not a reference',         code=> 'not ref $value',             parent=> 'defined',               },
  {name=> 'bool',      help=> '0 or 1',                  code=> '$value eq 0 or $value eq 1', parent=> 'no_ref',  default=> 0,  },
  {name=> 'num',       help=> 'any type of number',      code=> 'looks_like_number($value)',  parent=> 'no_ref',  default=> 0,  equality=> '$a == $b', },
- {name=> 'pos_num',   help=> 'a number >= 0',           code=> '$value >= 0',                parent=> 'num'                    },
- {name=> 'spos_num',  help=> 'a number > 0',            code=> '$value > 0',                 parent=> 'num',     default=> 1,  },
  {name=> 'int',       help=> 'number without decimals', code=> 'int($value) == $value',      parent=> 'no_ref',  default=> 0,  equality=> '$a == $b', },
- {name=> 'pos_int',   help=> 'integer greater equal 0', code=> '$value >= 0',                parent=> 'int',                   },
- {name=> 'spos_int',  help=> 'integer > 0',             code=> '$value > 0',                 parent=> 'int',     default=> 1,  },
  {name=> 'str',       help=> 'string of characters',                                         parent=> 'no_ref',                },
  {name=> 'char',      help=> 'one letter',              code=> 'length($value) == 1',        parent=> 'str',     default=> 'a' },
  {name=> 'ne_str',    help=> 'none empty string',       code=> '$value or ~$value',          parent=> 'no_ref',  default=> ' ' },
@@ -32,32 +28,33 @@ our @parametric = (
  {name=> 'inf',        help=> 'greater then $param',      code=> '$param <  $value',           parent => ['num', 'int'] },
  {name=> 'max',        help=> 'less or equal $param',     code=> '$param >= $value',           parent => ['num', 'int'] },
  {name=> 'sup',        help=> 'less then $param',         code=> '$param >  $value',           parent => ['num', 'int'] },
- {name=> 'enum',       help=> 'one of: @$param',          code=> '$value eq 0 or $value eq 1', parent => ['str'] },
- {name=> 'ref',        help=> 'ref type $param',          code=> 'ref $value eq $param',       parent => ['value'] },
+ {name=> 'enum',       help=> 'one of: @$param',          code=> '$value eq 0 or $value eq 1', parent => ['str']        },
+ {name=> 'ref',        help=> 'ref type $param',          code=> 'ref $value eq $param'                                 },
 );
 
-our @combinator = (
- {name=> 'sum',        help=> 'sum of elements',       code=> '1',                     default=> '', },
+our @argument = (
+ {name=> 'pos',        help=> 'positive number',          parent=> 'min',      arg => 0 },
+ {name=> 'spos',       help=> 'strictly positive number', parent=> 'inf',      arg => 0 },
+ {name=> 'ARRAY',      help=> 'ARRAY reference',          parent=> 'ref',      arg => 'ARRAY' },
+ {name=> 'HASH',       help=> 'HASH reference',           parent=> 'ref',      arg => 'HASH' },
+ {name=> 'CODE',       help=> 'CODE reference',           parent=> 'ref',      arg => 'CODE' },
 );
 
-
-our @basic_extract = (
+our @derivate = (
  {name=> 'value',      help=> 'value',        code=> '$value',         input => 'defined', output  => 'int' },
  {name=> 'len',        help=> 'length',       code=> 'length($value)', input => 'str'    , output  => 'int' },
  {name=> 'len',        help=> 'length',       code=> '@$value',        input => 'ARRAY'  , output  => 'int' },
  {name=> 'len',        help=> 'length',       code=> 'keys(%$value)',  input => 'HASH'   , output  => 'int' },
 );
 
-our @compound_extract = (
- {name=> 'sum',        help=> 'sum of elements',       code=> '1',                     default=> '', },
+our @combinator = (
+ {name=> 'LIST',        help=> 'list',       code=> '1',                     default=> '', },
+ {name=> 'IN_SET',     help=> 'is value in set',       code=> '1',                     default=> '', },
+ {name=> 'ARRAY',      help=> '',       code=> '1',                     default=> '', },
+ {name=> 'HASH',       help=> '',       code=> '1',                     default=> '', },
+ {name=> 'OR',         help=> '',       code=> '1',                     default=> '', },
 );
 
-our @array = (
- {name=> 'any',        help=> 'accepts any value',       code=> '1',                   default=> '', },
-);
 
-our @hash = (
- {name=> 'any',        help=> 'accepts any value',       code=> '1',                   default=> '', },
-);
 
 1;

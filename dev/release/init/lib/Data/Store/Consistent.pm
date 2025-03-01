@@ -4,8 +4,9 @@
 package Data::Store::Consistent;
 use v5.12;
 use warnings;
-use Data::Store::Consistent::Type;
 use Data::Store::Consistent::Schema;
+use Data::Store::Consistent::Tree;
+use Data::Store::Consistent::Type;
 
 sub new {
     my ($pkg, $schema, $types, $actions) = @_;
@@ -21,7 +22,7 @@ sub new {
     # eval schema: create tree from schema
     # eval actions
     #
-    # bless {root => }
+    # bless {data => {}, actions => {}};
 }
 
 

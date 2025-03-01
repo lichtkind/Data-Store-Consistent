@@ -10,6 +10,8 @@ use Data::Store::Consistent::Type::Array;
 use Data::Store::Consistent::Type::Hash;
 
 ########################################################################
+my $basic = Data::Store::Consistent::Type::Basic->new();
+my $param = Data::Store::Consistent::Type::Parametric->new();
 
 
 sub add {
@@ -20,8 +22,8 @@ sub compile {
     my ($name, $def) = @_;
 }
 
-sub get_type_checker {
-    my ($name) = @_;
+sub get {
+    my ($names) = @_;
 }
 
 

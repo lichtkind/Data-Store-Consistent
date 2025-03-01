@@ -1,13 +1,13 @@
 
-#
+# node holding other nodes in data tree structure
 
 package Data::Store::Consistent::Node::Inner;
 use v5.12;
 use warnings;
-
+use Data::Store::Consistent::Node::Inner;
 
 sub new {
-    my ($pkg, $type_set, $name, $help, $type, $default) = @_;
+    my ($pkg, $name, $help, $link_up, $write_trigger, $read_trigger) = @_;
     return 'need a data set object as first argument' unless ref $type_set eq 'Data::Store::Consistent::Type::Set';
     return 'need a node name as second argument' unless defined $name and $name;
     return 'need help text as third argument' unless defined $help and $help;
@@ -15,8 +15,8 @@ sub new {
     return 'unkown type' unless $type_set->has_type( $type );
     $default //= $type_set->get_default_value( $type );
 
-    bless { name => $name, help => $help, type => $type, checker => $type_set->get_type_checker( $type ),
-            read_callbacks => [], write_callbacks => [],
+    bless { name => $name, help => $help, up => $link_up,
+            write_trigger => $write_trigger, read_trigger => $read_trigger,
           };
 }
 
@@ -28,7 +28,7 @@ sub get_node {
 sub read {
     my ($self, $node ) = @_;
     # node exists ?
-    # trigger action
+    # read trigger action
     # return data
 }
 
@@ -38,7 +38,7 @@ sub write {
     # data of type ?
     # data different ?
     # write data
-    # trigger action
+    # write trigger action
 }
 
 

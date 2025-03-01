@@ -40,20 +40,18 @@ sub _add_type {
     my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
     $default_value = $self->{$parent}{'default_value'} unless defined $default_value;
 
-    my $checks = (defined $condition) ? [[$help, $condition]] : [];
-    $checks = [@{$self->{$parent}{'checks'}}, @$checks] if defined $parent;
-    my $source = '';
-    for my $help_code (@$checks) {
-        $source .= 'return "value $value'." needed to be of type $name, but failed test: $help_code->[0]\" unless $help_code->[1];"
-    }
-    $source = 'sub { my( $value) = @_; no warnings "all";'. $source . "return ''}";
-    my $coderef = eval $source;
-    return "type '$name' condition source 'code' - '$source' - could not eval because: $@ !" if $@;
+    my $code = (defined $condition)
+               ? '  return "$name value: $value'." needed to be of type $name, but failed test: $help!\" unless $condition;\n" : '';
+    $code = $self->{$parent}{'code'} . $code if defined $parent;
+    my $whole_sub = "sub { \n".'  my($value, $name) = @_;'."\n".
+                               '  $name //= ""; no warnings "all";'."\n". $code . "  return ''\n}";
+    my $coderef = eval $whole_sub;
+    return "type '$name' condition source 'code' - '$whole_sub' - could not eval because: $@ !" if $@;
 
     my $error = $coderef->( $default_value );
-    return "type '$name' default value triggers type checks: $error!" if $error;
+    return "type '$name' default value does not conform to type checks: $error!" if $error;
 
-    $equality      = $self->{$parent}{'equality'} unless defined $equality;
+    $equality = $self->{$parent}{'equality'} unless defined $equality;
     my $eq_ref;
     if (defined $equality) {
         my $eq_source = 'sub {($a, $b) = @_; return '.$equality.' }';
@@ -63,11 +61,12 @@ sub _add_type {
         $eq_ref = $self->{$parent}{'equality'}
     }
 
-    $parent = [$parent, @{$self->{$parent}{'parent'}}] if exists $self->{$parent}{'parent'};
-    $parent = [$parent] unless ref $parent;
+    $parent = (not defined $parent)                   ? []
+            : (not exists $self->{$parent}{'parent'}) ? [$parent]
+            :                                           [$parent, @{$self->{$parent}{'parent'}}];
 
     $self->{$name} = { parent => $parent, default_value => $default_value,
-                       checks => $checks, type_check => $coderef, eqality => $eq_ref };
+                       code => $code, type_check => $coderef, eqality => $eq_ref };
     0;
 }
 

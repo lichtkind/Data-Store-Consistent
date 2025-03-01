@@ -7,9 +7,9 @@ use warnings;
 use utf8;
 
 our @basic = (
- {name=> 'any',       help=> 'any value',               code=> '1',                                              default=> '', },
- {name=> 'def',       help=> 'defined value',           code=> 'defined $value',                                 default=> '', equality=> '$a eq $b', },
- {name=> 'no_ref',    help=> 'not a reference',         code=> 'not ref $value',             parent=> 'def',                   },
+ {name=> 'any',       help=> 'any value',               code=> '1',                                              default=> '', equality=> '$a eq $b', },
+ {name=> 'defined',   help=> 'defined value',           code=> 'defined $value',                                 default=> '', equality=> '$a eq $b', },
+ {name=> 'no_ref',    help=> 'not a reference',         code=> 'not ref $value',             parent=> 'defined',               },
  {name=> 'bool',      help=> '0 or 1',                  code=> '$value eq 0 or $value eq 1', parent=> 'no_ref',  default=> 0,  },
  {name=> 'num',       help=> 'any type of number',      code=> 'looks_like_number($value)',  parent=> 'no_ref',  default=> 0,  equality=> '$a == $b', },
  {name=> 'pos_num',   help=> 'a number >= 0',           code=> '$value >= 0',                parent=> 'num'                    },
@@ -32,31 +32,32 @@ our @parametric = (
  {name=> 'inf',        help=> 'greater then $param',      code=> '$param <  $value',           parent => ['num', 'int'] },
  {name=> 'max',        help=> 'less or equal $param',     code=> '$param >= $value',           parent => ['num', 'int'] },
  {name=> 'sup',        help=> 'less then $param',         code=> '$param >  $value',           parent => ['num', 'int'] },
-
- {name=> 'min',        help=> '$param character or more', code=> '$param <= length($value)',   parent => ['str'] },
- {name=> 'max',        help=> '$param character or less', code=> '$param >= length($value)',   parent => ['str'] },
- {name=> 'min',        help=> '$param character or more', code=> '$param <= @$value',          parent => ['ARRAY'] },
- {name=> 'max',        help=> '$param character or less', code=> '$param >= @$value',          parent => ['ARRAY'] },
- {name=> 'min',        help=> '$param character or more', code=> '$param <= keys(%$value)',    parent => ['HASH'] },
- {name=> 'max',        help=> '$param character or less', code=> '$param >= keys(%$value)',    parent => ['HASH'] },
  {name=> 'enum',       help=> 'one of: @$param',          code=> '$value eq 0 or $value eq 1', parent => ['str'] },
  {name=> 'ref',        help=> 'ref type $param',          code=> 'ref $value eq $param',       parent => ['value'] },
 );
 
+our @combinator = (
+ {name=> 'sum',        help=> 'sum of elements',       code=> '1',                     default=> '', },
+);
+
+
 our @basic_extract = (
- {name=> 'length',        help=> 'accepts any value',       code=> '1',                                                 default=> '', },
+ {name=> 'value',      help=> 'value',        code=> '$value',         input => 'defined', output  => 'int' },
+ {name=> 'len',        help=> 'length',       code=> 'length($value)', input => 'str'    , output  => 'int' },
+ {name=> 'len',        help=> 'length',       code=> '@$value',        input => 'ARRAY'  , output  => 'int' },
+ {name=> 'len',        help=> 'length',       code=> 'keys(%$value)',  input => 'HASH'   , output  => 'int' },
 );
 
 our @compound_extract = (
- {name=> 'length',        help=> 'accepts any value',       code=> '1',                                                 default=> '', },
+ {name=> 'sum',        help=> 'sum of elements',       code=> '1',                     default=> '', },
 );
 
 our @array = (
- {name=> 'any',        help=> 'accepts any value',       code=> '1',                                                 default=> '', },
+ {name=> 'any',        help=> 'accepts any value',       code=> '1',                   default=> '', },
 );
 
 our @hash = (
- {name=> 'any',        help=> 'accepts any value',       code=> '1',                                                 default=> '', },
+ {name=> 'any',        help=> 'accepts any value',       code=> '1',                   default=> '', },
 );
 
 1;

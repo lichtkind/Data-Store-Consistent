@@ -67,3 +67,31 @@ sub get_node {
 }
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Data::Store::Consistent -
+
+=head1 SYNOPSIS
+
+
+=head1 SEE ALSO
+
+
+=head1 AUTHOR
+
+Herbert Breunung (lichtkind@cpan.org)
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright(c) 2025 by Herbert Breunung
+
+All rights reserved.
+This program is free software and can be used, changed and distributed
+under the GPL 3 licence.
+
+=cut

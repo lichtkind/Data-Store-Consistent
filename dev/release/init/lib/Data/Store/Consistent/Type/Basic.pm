@@ -43,7 +43,7 @@ sub _add_type {
     my $code = (defined $condition)
                ? '  return "$name value: $value'." needed to be of type $name, but failed test: $help!\" unless $condition;\n" : '';
     $code = $self->{$parent}{'code'} . $code if defined $parent;
-    my $whole_sub = "sub { \n".'  my($value, $name) = @_;'."\n".
+    my $whole_sub = "sub { \n".'  my($value, $name, $params) = @_;'."\n".
                                '  $name //= ""; no warnings "all";'."\n". $code . "  return ''\n}";
     my $coderef = eval $whole_sub;
     return "type '$name' condition source 'code' - '$whole_sub' - could not eval because: $@ !" if $@;

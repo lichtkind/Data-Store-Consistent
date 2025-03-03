@@ -1,5 +1,5 @@
 
-# definitions of standard data types, to be used by D::S::C::Type::Set
+# definitions of standard data types
 
 package Data::Store::Consistent::Type::Definition;
 use v5.12;
@@ -8,14 +8,14 @@ use utf8;
 
 our @basic = (
  {name=> 'any',       help=> 'any value',               code=> '1',                                              default=> '', equality=> '$a eq $b', },
- {name=> 'defined',   help=> 'defined value',           code=> 'defined $value',                                 default=> '', equality=> '$a eq $b', },
- {name=> 'no_ref',    help=> 'not a reference',         code=> 'not ref $value',             parent=> 'defined',               },
- {name=> 'bool',      help=> '0 or 1',                  code=> '$value eq 0 or $value eq 1', parent=> 'no_ref',  default=> 0,  },
- {name=> 'num',       help=> 'any type of number',      code=> 'looks_like_number($value)',  parent=> 'no_ref',  default=> 0,  equality=> '$a == $b', },
- {name=> 'int',       help=> 'number without decimals', code=> 'int($value) == $value',      parent=> 'no_ref',  default=> 0,  equality=> '$a == $b', },
- {name=> 'str',       help=> 'string of characters',                                         parent=> 'no_ref',                },
+ {name=> 'defined',   help=> 'a defined value',         code=> 'defined $value',                                 default=> '', equality=> '$a eq $b', },
+ {name=> 'not_ref',   help=> 'not a reference',         code=> 'not ref $value',             parent=> 'defined',               },
+ {name=> 'bool',      help=> '0 or 1',                  code=> '$value eq 0 or $value eq 1', parent=> 'not_ref', default=> 0,  },
+ {name=> 'num',       help=> 'any type of number',      code=> 'looks_like_number($value)',  parent=> 'not_ref', default=> 0,  equality=> '$a == $b', },
+ {name=> 'int',       help=> 'number without decimals', code=> 'int($value) == $value',      parent=> 'num',     default=> 0,  equality=> '$a == $b', },
+ {name=> 'str',       help=> 'string of characters',                                         parent=> 'not_ref',               },
  {name=> 'char',      help=> 'one letter',              code=> 'length($value) == 1',        parent=> 'str',     default=> 'a' },
- {name=> 'ne_str',    help=> 'none empty string',       code=> '$value or ~$value',          parent=> 'no_ref',  default=> ' ' },
+ {name=> 'ne_str',    help=> 'none empty string',       code=> '$value',                     parent=> 'not_ref', default=> ' ' },
  {name=> 'lc_str',    help=> 'lower case string',       code=> 'lc $value eq $value',        parent=> 'ne_str',  default=> 'a' },
  {name=> 'uc_str',    help=> 'upper case string',       code=> 'uc $value eq $value',        parent=> 'ne_str',  default=> 'A' },
  {name=> 'word',      help=> 'only word character',     code=> '$value =~ /^\w+$/',          parent=> 'ne_str',  default=> 'A' },
@@ -24,37 +24,47 @@ our @basic = (
 );
 
 our @parametric = (
- {name=> 'min',        help=> 'greater or equal $param',  code=> '$param <= $value',           parent => ['num', 'int'] },
- {name=> 'inf',        help=> 'greater then $param',      code=> '$param <  $value',           parent => ['num', 'int'] },
- {name=> 'max',        help=> 'less or equal $param',     code=> '$param >= $value',           parent => ['num', 'int'] },
- {name=> 'sup',        help=> 'less then $param',         code=> '$param >  $value',           parent => ['num', 'int'] },
- {name=> 'enum',       help=> 'one of: @$param',          code=> '$value eq 0 or $value eq 1', parent => ['str']        },
- {name=> 'ref',        help=> 'ref type $param',          code=> 'ref $value eq $param'                                 },
+ {name=> 'min',       help=> 'greater or equal $param', code=> '$value >= $param',           parent => 'num'  }, # or children of num
+ {name=> 'inf',       help=> 'greater then $param',     code=> '$value >  $param',           parent => 'num'  },
+ {name=> 'max',       help=> 'less or equal $param',    code=> '$value <= $param',           parent => 'num'  },
+ {name=> 'sup',       help=> 'less then $param',        code=> '$value <  $param',           parent => 'num'  },
+ {name=> 'enum',      help=> 'one of: @$param',         code=> '$value eq 0 or $value eq 1', parent => 'str'  },
+ {name=> 'ref',       help=> 'ref type $param',         code=> 'ref $value eq $param'                                 },
 );
 
 our @argument = (
- {name=> 'pos',        help=> 'positive number',          parent=> 'min',      arg => 0 },
- {name=> 'spos',       help=> 'strictly positive number', parent=> 'inf',      arg => 0 },
- {name=> 'ARRAY',      help=> 'ARRAY reference',          parent=> 'ref',      arg => 'ARRAY' },
- {name=> 'HASH',       help=> 'HASH reference',           parent=> 'ref',      arg => 'HASH' },
- {name=> 'CODE',       help=> 'CODE reference',           parent=> 'ref',      arg => 'CODE' },
+ {name=> 'pos',       help=> 'positive number',         parent=> 'min',      arg=> 0 },
+ {name=> 'spos',      help=> 'strictly positive number',parent=> 'inf',      arg=> 0 },
+ {name=> 'array',     help=> 'ARRAY reference',         parent=> 'ref',      arg=> 'ARRAY' },
+ {name=> 'hash',      help=> 'HASH reference',          parent=> 'ref',      arg=> 'HASH' },
+ {name=> 'code',      help=> 'CODE reference',          parent=> 'ref',      arg=> 'CODE' },
+ {name=> 'char',      help=> 'an string of length 1',    code=> 'keys(%$value)',  input=> 'hash' ,     output=> 'int' },
 );
 
-our @derivate = (
- {name=> 'value',      help=> 'value',        code=> '$value',         input => 'defined', output  => 'int' },
- {name=> 'len',        help=> 'length',       code=> 'length($value)', input => 'str'    , output  => 'int' },
- {name=> 'len',        help=> 'length',       code=> '@$value',        input => 'ARRAY'  , output  => 'int' },
- {name=> 'len',        help=> 'length',       code=> 'keys(%$value)',  input => 'HASH'   , output  => 'int' },
+our @property = (
+ {name=> 'len',       help=> '',                                 code=> '$value',         input=> 'num'  ,     output=> '' },
+ {name=> 'len',       help=> 'an string with length of $param',  code=> 'length($value)', input=> 'str'  ,     output=> 'int' },
+ {name=> 'len',       help=> 'an Array of length $param',        code=> '@$value',        input=> 'array',     output=> 'int' },
+ {name=> 'len',       help=> 'an Hash of length $param',         code=> 'keys(%$value)',  input=> 'hash' ,     output=> 'int' },
 );
 
 our @combinator = (
- {name=> 'LIST',        help=> 'list',       code=> '1',                     default=> '', },
- {name=> 'IN_SET',     help=> 'is value in set',       code=> '1',                     default=> '', },
- {name=> 'ARRAY',      help=> '',       code=> '1',                     default=> '', },
- {name=> 'HASH',       help=> '',       code=> '1',                     default=> '', },
- {name=> 'OR',         help=> '',       code=> '1',                     default=> '', },
+ {name=> 'LIST',      help=> 'list',       parent=> ['str', 'num', 'int'],
+                      code=> ['for my $index (0 .. $#param) { my $param = $param[$index];',,'}'], },
+ {name=> 'IN_SET',    help=> '',           parent=> 'str' , },
+ {name=> 'ARRAY',     help=> '',           parent=> 'array',               property=> ['index', 'element'],
+                      code=> ['for my $index (0 .. $#value) { my $value = $value[$index];',,'}'],
+ },
+ {name=> 'HASH',      help=> '',           parent=> 'hash',                property=> ['key', 'value']
+                      code=> ['for my $key (keys %value) { my $value = $value{$key};',,'}'], },
+ {name=> 'OR',        help=> 'alternative',  parent=> '',
+                      code=> '1', },
 );
 
 
 
 1;
+
+# durchgangstypen ?
+# factory
+# store

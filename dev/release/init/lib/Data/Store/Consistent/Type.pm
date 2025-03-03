@@ -29,3 +29,13 @@ sub get {
 
 1;
 
+__END__
+
+types have to
+
+ - check for compliance
+ - check for equality
+ - store arguments
+ - accept temp args
+
+ARRAY{}<>

@@ -8,7 +8,7 @@ use Data::Store::Consistent::Schema;
 use Data::Store::Consistent::Tree;
 use Data::Store::Consistent::Type;
 
-sub new {
+sub new { # $schema -- @types, @actions, $config?
     my ($pkg, $schema, $types, $actions) = @_;
     return unless ref $schema eq 'HASH'
            and (not defined $types or ref $types eq 'ARRAY')
@@ -22,29 +22,16 @@ sub new {
     # eval schema: create tree from schema
     # eval actions
     #
-    # bless {data => {}, actions => {}};
+    # bless { data_tree => {}, actions => {} };
 }
 
 
-sub add_action {
-    my ($self, $name, $trigger, $target, $code) = @_;
-}
-sub remove_action {
-    my ($self, $name) = @_;
-}
-sub pause_action {
-    my ($self, $name) = @_;
-}
-sub resume_action {
-    my ($self, $name) = @_;
-}
-sub get_all_action_names {
-    my ($self, $name) = @_;
-}
-sub get_action_property {
-    my ($self, $name, $property_name) = @_;
-}
-
+sub add_action      { my $self = shift; $self->{'actions'}->add( @_ ); }
+sub remove_action   { my $self = shift; $self->{'actions'}->remove( @_ ); }
+sub pause_action    { my $self = shift; $self->{'actions'}->pause( @_ ); }
+sub resume_action   { my $self = shift; $self->{'actions'}->resume( @_ ); }
+sub action_names    { my $self = shift; $self->{'actions'}->get_names( @_ ); }
+sub action_property { my $self = shift; $self->{'actions'}->get_property( @_ ); }
 
 sub read_data {
     my ($self, $node_ID) = @_;

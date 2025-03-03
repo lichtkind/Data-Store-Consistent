@@ -29,7 +29,7 @@ sub pause {
 sub resume {
     my ($self, $ID) = @_;
 }
-sub all_names {
+sub get_names {
     my ($self, $name) = @_;
 }
 

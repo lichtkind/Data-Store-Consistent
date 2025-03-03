@@ -1,20 +1,36 @@
-HoAoH store of data
-restricted read and write access
-r and W events
-that trigger callbacks
-prevent circular deps
 
-typed (input checks)
-IO of subtrees
+# Name:  Data::Store::Consistent
+
+# Main features
+ ===============
+  + HoAoH store of data
+    - always adheres to contraints
+    - every node has an path like ID
+    - read and write of nodes and subtrees
+  + restricted read access
+    - give methods IO object that has only access of node or subtree
+  + restricted write access
+    - typed (input checks)
+    - only when value really changes
+  + read and write events
+    - triggered by read or write of nodes
+    - recalculates other node values
+    - with given callback
+    - prevent circular dependencies
 
 
-name Data::Store::Consistent
+# Glossary
+
+   schema: defines tree structure of data and properties of each nodes and triggers
+   node: node in this data tree
+   outer node (leave): holds data
+   inner node: holds other nodes
+   type: defines shape data has to adhere
+   event: gets triggered when node is read, written or both
+   callback: functions that gets called by event
 
 
-schema:
 
-    leaves hold data
-    nodes hold nodes or leaves
 
  = inner:
     - help: ~

@@ -6,17 +6,41 @@ use v5.12;
 use warnings;
 
 sub new {
-    my ($pkg, $type_set, $name, $help, $type, $default) = @_;
-    return 'need a data set object as first argument' unless ref $type_set eq 'Data::Store::Consistent::Type::Set';
-    return 'need a node name as second argument' unless defined $name and $name;
-    return 'need help text as third argument' unless defined $help and $help;
-    $type //= 'any';
-    return 'unkown type' unless $type_set->has_type( $type );
-    $default //= $type_set->get_default_value( $type );
-
-    bless { name => $name, help => $help, type => $type, checker => $type_set->get_type_checker( $type ),
-            read_callbacks => [], write_callbacks => [],
-          };
+    my ($pkg) = @_;
+    bless { by_source => {}, by_target => {}, paused => {} }; # read => {}, write => {}, all => {},
 }
 
-1
+
+sub add {
+    my ($self, $ID, $code, $trigger_node, $target_node, $event_type) = @_;
+    return unless defined $ID and $ID and ref $code eq 'CODE';
+    return unless defined $trigger_node and $trigger_node;
+    return unless defined $event_type and $event_type eq 'read'and $event_type eq 'write' and $event_type eq 'access';
+
+}
+
+sub remove {
+    my ($self, $ID) = @_;
+}
+
+sub pause {
+    my ($self, $ID) = @_;
+}
+sub resume {
+    my ($self, $ID) = @_;
+}
+sub all_names {
+    my ($self, $name) = @_;
+}
+
+sub get_property {
+    my ($self, $name, $property_name) = @_;
+}
+
+sub trigger {
+    my ($self, $node, $event_type) = @_;
+    my $stack = { sink => [], transit => [], };
+}
+
+
+1;

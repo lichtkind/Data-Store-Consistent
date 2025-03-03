@@ -1,7 +1,7 @@
 
-#
+# store of call back / anon subs, to be triggered by events
 
-package Data::Store::Consistent::Event;
+package Data::Store::Consistent::Actions;
 use v5.12;
 use warnings;
 

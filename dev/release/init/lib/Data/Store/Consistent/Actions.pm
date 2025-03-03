@@ -12,11 +12,11 @@ sub new {
 
 
 sub add {
-    my ($self, $ID, $code, $trigger_node, $target_node, $event_type) = @_;
+    my ($self, $tree, $ID, $code, $trigger_node, $target_node, $event_type) = @_;
     return unless defined $ID and $ID and ref $code eq 'CODE';
     return unless defined $trigger_node and $trigger_node;
     return unless defined $event_type and $event_type eq 'read'and $event_type eq 'write' and $event_type eq 'access';
-
+$self->{'data_tree'}
 }
 
 sub remove {
@@ -30,7 +30,7 @@ sub resume {
     my ($self, $ID) = @_;
 }
 sub get_names {
-    my ($self, $name) = @_;
+    my ($self, $ID) = @_; # ALL for all
 }
 
 sub get_property {

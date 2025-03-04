@@ -1,14 +1,14 @@
 
-# data type like bool, int, num, str, etc
+# assemble type objects from definition
 
-package Data::Store::Consistent::Type::Basic;
+package Data::Store::Consistent::Type::Factory;
 use v5.12;
 use warnings;
 use Scalar::Util qw/blessed looks_like_number/;
-use Data::Store::Consistent::Type::Definition;
+use Data::Store::Consistent::Type::Store;
 
-sub new {
-    my $pkg = shift;
+sub create_type_object {
+    my ($def) = @_;
     my $set = {};
     add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::basic;
     bless $set;
@@ -70,19 +70,7 @@ sub _add_type {
     0;
 }
 
-########################################################################
-sub get_type_property {
-    my ($self, $name, $property) = @_;
-    return "need a type name as first argument" unless defined $name and $name;
-    return "type $name is not element of this set" unless exists $self->{ $name };
-    return "need a type property for $name as second argument" unless defined $property and $property;
-    return $self->{ $name }{'help'}          if $property eq 'help';
-    return $self->{ $name }{'type_check'}    if $property eq 'type_checker';
-    return $self->{ $name }{'default_value'} if $property eq 'default_value';
-    return "unknown type property: $property, try type_chacker, help or default_value";
-}
 
-sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
 
 ########################################################################
 1;

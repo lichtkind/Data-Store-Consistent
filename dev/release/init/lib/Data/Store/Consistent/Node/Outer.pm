@@ -46,6 +46,16 @@ sub write {
     $self->{'value'} = $data;
 }
 
+sub reset {
+    my ($self) = @_;
+    # also stop if readonly
+    return $error if $error; # + params
+    $error = $self->{'eq_checker'}->($data, $self->{'value'}, $self->{'name'});
+    return $error if $error;
+    $self->{'actions'}->trigger('write');
+    $self->{'value'} = $data;
+}
+
 
 
 1;

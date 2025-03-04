@@ -57,15 +57,17 @@ structure:
     node : type, children, description ?,
 
 
+# Schema
+
 
 
 callback:
 
     $name, $trigger, $target, $code
 
+#Types:
 
-
-enum()
-spos_int : int({1,})
-pattern : @[$nr]<str{$len}>
-color: @[3]<int{0,255}>
+ - enum()
+   spos_int : int({1,})
+   pattern : @[$nr]<str{$len}>
+   color: @[3]<int{0,255}>

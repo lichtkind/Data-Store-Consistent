@@ -17,6 +17,13 @@ sub add {
     Data::Store::Consistent::Type::Store::add( $type_or_error );
 }
 
+sub remove { # none default
+    my ($name, $def) = @_;
+    my $type_or_error = Data::Store::Consistent::Type::Factory::create_type_object( $def );
+    return $type_or_error unless ref $type_or_error;
+    Data::Store::Consistent::Type::Store::add( $type_or_error );
+}
+
 sub exists {
     my ($name, $kind) = @_;
     Data::Store::Consistent::Type::Store::has_type( $name, $kind );

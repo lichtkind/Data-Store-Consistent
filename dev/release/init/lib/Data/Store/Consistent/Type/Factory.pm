@@ -1,7 +1,7 @@
 
-# extendable collection of type objects came from D::S::C::Type
+# data type like bool, int, num, str, etc
 
-package Data::Store::Consistent::Type::Simple;
+package Data::Store::Consistent::Type::Basic;
 use v5.12;
 use warnings;
 use Scalar::Util qw/blessed looks_like_number/;
@@ -10,16 +10,15 @@ use Data::Store::Consistent::Type::Definition;
 sub new {
     my $pkg = shift;
     my $set = {};
-    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::simple;
+    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::basic;
     bless $set;
 }
-
 
 sub add_type_def {
     my ($self, $def) = @_;
     return unless ref $def eq 'HASH' and exists $def->{'name'} and exists $def->{'help'};
-    add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'},
-                    $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
+    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'},
+                     $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
 }
 
 sub add_type {
@@ -35,24 +34,24 @@ sub add_type {
                      unless (defined $default_value and not ref $default_value) or $has_parent;
     return "type $name misses equality chacker code or parent"
                      unless (defined $equality and $equality and not ref $equality) or $has_parent;
-
+    $self->_add_type( $name, $help, $condition, $parent, $default_value, $equality );
+}
+sub _add_type {
+    my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
     $default_value = $self->{$parent}{'default_value'} unless defined $default_value;
 
-    my $checks = (defined $condition) ? [[$help, $condition]] : [];
-    $checks = [@{$self->{$parent}{'checks'}}, @$checks] if defined $parent;
-    my $source = '';
-    for my $help_code (@$checks) {
-        $source .= 'return "value $value'." needed to be of type $name, but failed test: $help_code->[0]\" unless $help_code->[1];"
-    }
-    $source = 'sub { my( $value) = @_; no warnings "all";'. $source . "return ''}";
-    my $coderef = eval $source;
-    return "type '$name' condition source 'code' - '$source' - could not eval because: $@ !" if $@;
+    my $code = (defined $condition)
+               ? '  return "$name value: $value'." needed to be of type $name, but failed test: $help!\" unless $condition;\n" : '';
+    $code = $self->{$parent}{'code'} . $code if defined $parent;
+    my $whole_sub = "sub { \n".'  my($value, $name, $params) = @_;'."\n".
+                               '  $name //= ""; no warnings "all";'."\n". $code . "  return ''\n}";
+    my $coderef = eval $whole_sub;
+    return "type '$name' condition source 'code' - '$whole_sub' - could not eval because: $@ !" if $@;
 
     my $error = $coderef->( $default_value );
-    return "type '$name' default value triggers type checks: $error!" if $error;
+    return "type '$name' default value does not conform to type checks: $error!" if $error;
 
-    $equality      = $self->{$parent}{'equality'} unless defined $equality;
-
+    $equality = $self->{$parent}{'equality'} unless defined $equality;
     my $eq_ref;
     if (defined $equality) {
         my $eq_source = 'sub {($a, $b) = @_; return '.$equality.' }';
@@ -62,11 +61,16 @@ sub add_type {
         $eq_ref = $self->{$parent}{'equality'}
     }
 
+    $parent = (not defined $parent)                   ? []
+            : (not exists $self->{$parent}{'parent'}) ? [$parent]
+            :                                           [$parent, @{$self->{$parent}{'parent'}}];
+
     $self->{$name} = { parent => $parent, default_value => $default_value,
-                       checks => $checks, type_check => $coderef, eqality => $eq_ref };
+                       code => $code, type_check => $coderef, eqality => $eq_ref };
     0;
 }
 
+########################################################################
 sub get_type_property {
     my ($self, $name, $property) = @_;
     return "need a type name as first argument" unless defined $name and $name;
@@ -80,4 +84,5 @@ sub get_type_property {
 
 sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
 
+########################################################################
 1;

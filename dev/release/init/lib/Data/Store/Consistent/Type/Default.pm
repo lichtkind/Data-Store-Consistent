@@ -1,7 +1,7 @@
 
 # definitions of standard data types
 
-package Data::Store::Consistent::Type::Definition;
+package Data::Store::Consistent::Type::Default;
 use v5.12;
 use warnings;
 use utf8;
@@ -65,6 +65,4 @@ our @combinator = (
 
 1;
 
-# durchgangstypen ?
-# factory
-# store
+# durchgangstypen op liek not ?

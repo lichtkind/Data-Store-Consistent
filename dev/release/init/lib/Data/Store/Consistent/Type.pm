@@ -4,10 +4,9 @@
 package Data::Store::Consistent::Type;
 use v5.12;
 use warnings;
-use Data::Store::Consistent::Type::Basic;
-use Data::Store::Consistent::Type::Parametric;
-use Data::Store::Consistent::Type::Array;
-use Data::Store::Consistent::Type::Hash;
+use Data::Store::Consistent::Type::Default;
+use Data::Store::Consistent::Type::Factory;
+use Data::Store::Consistent::Type::Store;
 
 ########################################################################
 my $basic = Data::Store::Consistent::Type::Basic->new();

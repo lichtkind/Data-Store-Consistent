@@ -51,9 +51,10 @@ __END__
 
 =head1 NAME
 
-Data::Store::Consistent -
+Data::Store::Consistent - storage with consistency checks and autocompletion
 
 =head1 SYNOPSIS
+
 
 
 =head1 SEE ALSO

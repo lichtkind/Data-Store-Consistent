@@ -59,7 +59,10 @@ types have to
 
  - check for compliance
  - check for equality
- - store arguments
+ - accept and store arguments
  - accept temp args
+ - be combinable
+ - inherit each other
+ - give best possible error messages
 
 ARRAY{}<>

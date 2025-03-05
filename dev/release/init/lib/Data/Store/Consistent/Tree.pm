@@ -5,10 +5,13 @@ package Data::Store::Consistent::Tree;
 use v5.12;
 use warnings;
 use Data::Store::Consistent::Node::Root;
+use Data::Store::Consistent::Node::Actions;
 
 sub new {
     my ($pkg) = @_;
-    { root = Data::Store::Consistent::Node::Root->new(), trigger => '' }
+    my $trigger = Data::Store::Consistent::Node::Actions->new();
+    my $root = Data::Store::Consistent::Node::Root->new();
+    bless { root => $root, trigger => $trigger };
 }
 
 #### base access #######################################################
@@ -70,6 +73,10 @@ sub write_data      {
     $self->root->write_node( $node_path, $data );
 }
 
-
-
 1;
+
+__END__
+
+process writers in right order
+update type params --> type checks
+outward callbacks

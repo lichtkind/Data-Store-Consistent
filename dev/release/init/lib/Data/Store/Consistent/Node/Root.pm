@@ -5,11 +5,13 @@ package Data::Store::Consistent::Node::Root;
 use v5.12;
 use warnings;
 use Data::Store::Consistent::Node::Inner;
+use Data::Store::Consistent::Node::Actions;
 
 
 sub new {
     my ($pkg, $note) = @_;
-    bless { child => {} , note => $note//''};
+    my $trigger = Data::Store::Consistent::Node::Actions->new( );
+    bless { child => {} , note => $note//'', trigger => $trigger, filled => 0 };
 }
 sub note        { $_[0]->{'note'} }
 sub change_note { $_[0]->{'note'}  = $_[1] }
@@ -94,6 +96,11 @@ sub write_node {
     my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->write( $data );
+}
+
+sub fill {
+    my ($self, $data) = @_;
+    $self->write( $data );
 }
 
 

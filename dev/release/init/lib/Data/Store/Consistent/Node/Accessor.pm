@@ -1,14 +1,14 @@
 
 # node holding other nodes in data tree structure
 
-package Data::Store::Consistent::Node::Inner;
+package Data::Store::Consistent::Node::Accessor;
 use v5.12;
 use warnings;
-use Data::Store::Consistent::Node::Outer;
+use Data::Store::Consistent::Node::Root;
 use Data::Store::Consistent::Node::Actions;
 
 sub new {
-    my ($pkg, $name, $description, $note) = @_;
+    my ($pkg, $node, $read, $write) = @_;
     return 'need a name for this inner data tree node' unless defined $name;
 
     bless { name => $name, description => $description // '', note => $note // '', child => {} };

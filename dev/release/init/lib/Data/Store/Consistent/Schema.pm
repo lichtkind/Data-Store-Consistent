@@ -44,14 +44,27 @@ sub definition_from_node {
 
 1;
 __END__
+Data::Store::Consistent::Node::Root::join_path()
 
+          R      W
+          ---------
+          W      W    hidden (code only for writer)
+          L      -    constant
+          -      L    secret
+          G      L    write
+          L      G    read
+          L      L    full
+
+{ name => 'der', children => {} }
+{ name => 'der', children => {} }
 
  = inner:
-    - ~name
-    - children: {} []
+    1 ~name
+    2 %children
     ----
-    - ~description
-    - ~note
+    3 ~description // ''
+    4 ~permission // full
+    5 ~note // ''
     =====
     - @read_trigger
     - @write_trigger
@@ -59,15 +72,16 @@ __END__
 
  = outer:
     1 ~name
-    2 ~type_def|%type_def:
-    3 ~description
+    2 ~description
+    3 ~permission
+    4 ~type_def|%type_def:
     ----
-    4 ? ~note
-    5 ? $default_value
-    6 !5 &writer:
-    7 ?6 @writer_trigger: ~node_path ? when &writer :: node_name/node_name # on read event
-    8 ?6 @writer_param: ~node_path ? when &writer :: node_name/node_name # on write event
-    9 ? @type_param: ~node_path :: node_name/node_name
+    5 ? ~note
+    6 ? $default_value // $type.default_value
+    7 !6 &writer:
+    8 ?7 @writer_trigger: ~node_path ? when &writer :: node_name/node_name # on read event
+    9 ?7 @writer_param: ~node_path ? when &writer :: node_name/node_name # on write event
+   10 ? @type_param: ~node_path :: node_name/node_name                 # on write event
     =====
     - typechecker
     - equality_checker

@@ -41,7 +41,9 @@ sub remove_node     {
     my ($self, $node_ID) = @_;
     $self->{'data_tree'}->remove( $node_ID );
 }
-sub get_schema      { $_[0]->{'data_tree'}->get_schema(  ) }
+sub get_schema      {
+    Data::Store::Consistent::Schema::schema_from_data_tree( $_[0]->{'data_tree'} );
+}
 
 #### trigger ###########################################################
 sub add_trigger      {

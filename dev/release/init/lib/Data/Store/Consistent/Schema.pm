@@ -1,17 +1,42 @@
 
-#
+# translate a definition of a data tree into an object tree and back
 
 package Data::Store::Consistent::Schema;
+use v5.12;
+use warnings;
 use Data::Store::Consistent::Tree;
 
 
-sub is_valid { #  $schema --> ?
+sub is_valid {
     my ($schema ) = @_;
 
 }
 
-sub build_data_tree_from_schema {
+sub is_node_definition {
+    my ($definition) = @_;
+
+}
+
+sub data_tree_from_schema {
     my ($schema ) = @_;
+    my $tree;
+    $tree:
+}
+
+sub node_from_definition {
+    my ($definition) = @_;
+    my $tree;
+    $tree:
+}
+
+sub schema_from_data_tree {
+    my ($tree ) = @_;
+    my $tree;
+    $tree:
+}
+
+sub definition_from_node {
+    my ($node) = @_;
     my $tree;
     $tree:
 }
@@ -23,17 +48,19 @@ __END__
  = inner:
     - name: ~
     - help: ~
-    - children: {}
+    - children: {} []
     ----
+    - note: ~
     =====
     - uplink
 
 
  = outer:
-    - name: ~ !
-    - help: ~ !
-    - type: ~ !
+    - name: ~
+    - help: ~
+    - type: ~
     ----
+    - note: ~
     - $default_value ? must if no writer
     - &writer:
     - writer_param: @node_path ? when &writer :: node_name/node_name:w

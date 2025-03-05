@@ -21,7 +21,7 @@ sub new {
           };
 }
 
-sub get_node {
+sub get_child {
     my ($self, $node_ID, $data) = @_;
     # node exists ?
 }

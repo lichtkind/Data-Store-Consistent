@@ -28,81 +28,56 @@ sub add_type        {
     my ($self, $type_def) = @_;
     Data::Store::Consistent::Type::add( $type_def );
 }
+
 sub remove_type     {
     my ($self, $type_name) = @_;
     Data::Store::Consistent::Type::remove( $type_name );
 }
-sub add_node        {
-    my ($self, $node_def) = @_;
-    $self->{'data_tree'}->add( $node_def );
-    my $self = shift; $self->{'data_tree'}->add( @_ );
-}
-sub remove_node     {
-    my ($self, $node_ID) = @_;
-    $self->{'data_tree'}->remove( $node_ID );
-}
-sub get_schema      {
+
+sub get_schema {
     Data::Store::Consistent::Schema::schema_from_data_tree( $_[0]->{'data_tree'} );
 }
 
+sub add_node        { my $self = shift; $self->{'data_tree'}->add_node( @_ ) }
+sub remove_node     { my $self = shift; $self->{'data_tree'}->remove_node( @_ ) }
+
 #### trigger ###########################################################
 sub add_trigger      {
-    my ($self, $node_ID, @param) = @_;
-    my $node = $self->get_node( $node_ID );
+    my ($self, $node_path, @param) = @_;
+    my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->triggers->add( @param );
 }
 sub remove_trigger      {
-    my ($self, $node_ID, @param) = @_;
-    my $node = $self->get_node( $node_ID );
+    my ($self, $node_path, @param) = @_;
+    my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->->triggers->remove( @param );
 }
 sub freeze_trigger    {
-    my ($self, $node_ID, @param) = @_;
-    my $node = $self->get_node( $node_ID );
+    my ($self, $node_path, @param) = @_;
+    my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->triggers->freeze( @param );
 }
 sub thaw_trigger    {
-    my ($self, $node_ID, @param) = @_;
-    my $node = $self->get_node( $node_ID );
+    my ($self, $node_path, @paramy) = @_;
+    my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->triggers->thaw( @param );
 }
-sub name_trigger    {
-    my ($self, $node_ID, @param) = @_;
-    my $node = $self->get_node( $node_ID );
-    return $node unless ref $node;
-    $node->triggers->names( @param );
-}
-sub get_trigger_property {
-    my ($self, $node_ID, @param) = @_;
-    my $node = $self->get_node( $node_ID );
-    return $node unless ref $node;
-    $node->triggers->property( @param );
-}
 
 #### base IO ###########################################################
-sub read_data       {
-    my ($self, $node_ID) = @_;
-    my $node = $self->get_node($node_ID);
-    return $node unless ref $node;
-    $node->read();
+sub get_node { my ($self, $node_path) = @_; $self->{'data_tree'}->get_node( $node_path ) }
+sub read_data { my ($self, $node_path) = @_; $self->{'data_tree'}->read_data( $node_path ) }
+sub read_data_silent {
+    my ($self, $node_path) = @_;
+    $self->{'data_tree'}->read_data_silent( $node_path )
 }
-
-sub write_data      {
-    my ($self, $node_ID, $data) = @_;
-    my $node = $self->get_node($node_ID);
-    return $node unless ref $node;
-    $node->write( $data );
+sub write_data {
+    my ($self, $node_path, $data) = @_;
+    $self->{'data_tree'}->write_data( $node_path, $data )
 }
-
-sub get_node {
-    my ($self, $node_ID) = @_;
-    $self->{'data_tree'}->get_node( $node_ID );
-}
-
 
 1;
 

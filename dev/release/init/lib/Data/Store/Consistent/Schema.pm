@@ -19,26 +19,27 @@ sub is_node_definition {
 
 sub data_tree_from_schema {
     my ($schema ) = @_;
-    my $tree;
-    $tree:
+    # build tree
+    my $tree = Data::Store::Consistent::Tree->new();
+    $tree;
 }
 
 sub node_from_definition {
     my ($definition) = @_;
-    my $tree;
-    $tree:
+    my $node;
+    $node;
 }
 
 sub schema_from_data_tree {
     my ($tree ) = @_;
-    my $tree;
-    $tree:
+    my $schema;
+    $schema;
 }
 
 sub definition_from_node {
     my ($node) = @_;
-    my $tree;
-    $tree:
+    my $definition;
+    $definition;
 }
 
 1;
@@ -46,34 +47,29 @@ __END__
 
 
  = inner:
-    - name: ~
-    - help: ~
+    - ~name
     - children: {} []
     ----
-    - note: ~
+    - ~description
+    - ~note
     =====
-    - uplink
+    - @read_trigger
+    - @write_trigger
 
 
  = outer:
-    - name: ~
-    - help: ~
-    - type: ~
+    1 ~name
+    2 ~type_def|%type_def:
+    3 ~description
     ----
-    - note: ~
-    - $default_value ? must if no writer
-    - &writer:
-    - writer_param: @node_path ? when &writer :: node_name/node_name:w
+    4 ? ~note
+    5 ? $default_value
+    6 !5 &writer:
+    7 ?6 @writer_trigger: ~node_path ? when &writer :: node_name/node_name # on read event
+    8 ?6 @writer_param: ~node_path ? when &writer :: node_name/node_name # on write event
+    9 ? @type_param: ~node_path :: node_name/node_name
     =====
-    - uplink
     - typechecker
     - equality_checker
-
-    #~ - help: ~
-    #~ - type: ~typename | ~typedef
-    #~ - ?default_value: $               # optional when type name given | to init
-    #~ - ?writer: &
-    #~ - $read_trigger: @node_path       # trigger these nodes when read
-    #~ - $write_trigger: @node_path      # trigger these nodes when written
-
-action_def: {sources : [], target : ~}
+    - @read_trigger
+    - @write_trigger

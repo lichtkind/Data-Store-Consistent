@@ -30,31 +30,46 @@
    callback: functions that gets called by event
 
 
-
-
+ = root : ?~node + %children
  = inner:
-    - help: ~
-    - children: {}
+    1 ~name
+    2 %children
+    ----
+    3 ~description
+    4 ~permission: read(fill) copy(paste) paste(read) write(only copy) full(r+w)
+    5 ~note
+    =====
+    - @read_trigger
+    - @write_trigger
 
  = outer:
-    - help: ~
-    - type: ~typename | ~typedef
-    - ?default_value: $               # optional when type name given | to init
-    - ?writer: &
-    - $write_trigger: @node_path      # trigger writer when on of these nodes changes
+    1 ~name
+    2 ~description
+    3 ~permission
+    4 ~type_def|%type_def:
+    ----
+    5 ? ~note
+    6 ? $default_value
+    7 !6 &writer:
+    8 ?7 @writer_trigger: ~node_path ? when &writer :: node_name/node_name # on read event
+    9 ?7 @writer_param: ~node_path ? when &writer :: node_name/node_name # on write event
+   10 ? @type_param: ~node_path :: node_name/node_name                 # on write event
+    =====
+    - typechecker
+    - equality_checker
+    - @read_trigger
+    - @write_trigger
 
 
-
-
-structure:
-
-   root: data, types,
-
-    read_callbacks
-    write_callbacks
-
-    leave : type, default_value?, description ?
-    node : type, children, description ?,
+# Permissions
+          R      W
+          ---------
+          W      W    hidden    (RW only for writer code )
+          L      -    constant  (read only locally at outer node)
+          -      L    secret    (write only locally at outer node)
+          G      L    write     (write always, read only from inner)
+          L      G    read      (read always, write only from inner)
+          L      L    full      (RW always)
 
 
 # Schema
@@ -63,7 +78,7 @@ structure:
 
 callback:
 
-    $name, $trigger, $target, $code
+    $name, @trigger(event), $code
 
 #Types:
 

@@ -4,43 +4,70 @@
 package Data::Store::Consistent::Node::Inner;
 use v5.12;
 use warnings;
-use Data::Store::Consistent::Node::Inner;
-use Data::Store::Consistent::Node::Actions;
+use Data::Store::Consistent::Node::Outer;
+
 
 sub new {
-    my ($pkg, $name, $help, $link_up, $write_call_back, $read_call_back) = @_;
-    return 'need a data set object as first argument' unless ref $type_set eq 'Data::Store::Consistent::Type::Set';
-    return 'need a node name as second argument' unless defined $name and $name;
-    return 'need help text as third argument' unless defined $help and $help;
-    $type //= 'any';
-    return 'unkown type' unless $type_set->has_type( $type );
-    $default //= $type_set->get_default_value( $type );
+    my ($pkg, $name, $description, $note) = @_;
+    return 'need a name for this inner data tree node' unless defined $name;
 
-    bless { name => $name, help => $help, up => $link_up,
-            write_trigger => $write_trigger, read_trigger => $read_trigger,
-          };
+    bless { name => $name, description => $description // '', note => $note // '', child => {} };
 }
 
-sub get_child {
-    my ($self, $node_ID, $data) = @_;
-    # node exists ?
+sub name        { $_[0]->{'name'} }
+sub description { $_[0]->{'description'} }
+sub note        { $_[0]->{'note'} }
+sub change_note { $_[0]->{'note'}  = $_[1] }
+
+#### node API ##########################################################
+sub get_child   {
+    my ($self, $node_name) = @_;
+    return $self->{'child'}{ $node_name } if exists $self->{'child'}{ $node_name };
 }
 
+
+sub add_child        {
+    my ($self, $node) = @_;
+    return 'can add only add inner and out data tree nodes' unless ref $node eq 'Data::Store::Consistent::Node::Innter'
+                                                                or ref $node eq 'Data::Store::Consistent::Node::Outer';
+    return 'node '.$node->name.' already exists as a child of '.$self->name if exists $self->{'child'}{ $node->name };
+    $self->{'child'}{ $node->{'name'} } = $node;
+}
+
+sub remove_child     {
+    my ($self, $node_name) = @_;
+    return 'got no node name' unless defined $node_name and $node_name;
+    return 'node '.$node_name.'does not exist' unless exists $self->{'child'}{ $node_name };
+    delete  $self->{'child'}{ $node_name };
+}
+
+#### IO API ############################################################
 sub read {
-    my ($self, $node ) = @_;
-    # node exists ?
-    # read trigger action
-    # return data
+    my ($self, $silent) = @_;
+    return { map { $_ => $self->{'child'}{ $_ }->read( $silent ) } keys %{$self->{'child'}} };
 }
 
 sub write {
-    my ($self, $node, $data) = @_;
-    # node exists ?
-    # data of type ?
-    # data different ?
-    # write data
-    # write trigger action
+    my ($self, $data) = @_;
+    return 'got no data HASH' unless ref $data eq 'HASH';
+    my $error_sum = '';
+    for my $child_name (keys %{$self->{'child'}}){
+        my $child = $self->get_child();
+        unless (ref $child) {
+            $error_sum .= "data for node $child_name is missing;";
+            next;
+        }
+        my $error = $self->{'child'}{ $child_name }->write();
+        $error_sum .= $error.';' if $error;
+    }
+    return $error_sum;
 }
 
+sub reset {
+    my ($self) = @_;
+    map { $_->reset } values %{$self->{'child'}};
+}
+
+########################################################################
 
 1;

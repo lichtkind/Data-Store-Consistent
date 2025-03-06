@@ -5,7 +5,6 @@ package Data::Store::Consistent::Node::Inner;
 use v5.12;
 use warnings;
 use Data::Store::Consistent::Node::Outer;
-use Data::Store::Consistent::Node::Actions;
 
 sub new {
     my ($pkg, $name, $description, $note) = @_;

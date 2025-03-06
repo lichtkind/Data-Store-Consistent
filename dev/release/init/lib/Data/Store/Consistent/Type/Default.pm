@@ -55,7 +55,7 @@ our @combinator = (
  {name=> 'ARRAY',     help=> '',           parent=> 'array',               property=> ['index', 'element'],
                       code=> ['for my $index (0 .. $#value) { my $value = $value[$index];',,'}'],
  },
- {name=> 'HASH',      help=> '',           parent=> 'hash',                property=> ['key', 'value']
+ {name=> 'HASH',      help=> '',           parent=> 'hash',                property=> ['key', 'value'],
                       code=> ['for my $key (keys %value) { my $value = $value{$key};',,'}'], },
  {name=> 'OR',        help=> 'alternative',  parent=> '',
                       code=> '1', },

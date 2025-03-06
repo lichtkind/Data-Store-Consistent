@@ -5,7 +5,6 @@ package Data::Store::Consistent::Tree;
 use v5.12;
 use warnings;
 use Data::Store::Consistent::Node::Root;
-use Data::Store::Consistent::Node::Actions;
 
 sub new {
     my ($pkg) = @_;
@@ -16,7 +15,7 @@ sub new {
 
 #### base access #######################################################
 sub root     { $_[0]->{'root'} }
-sub get_node { $_[0]->root->get_node( $node, $_[1] ) }
+sub get_node { $_[0]->root->get_node( $_[1] ) }
 
 sub add_node        {
     my ($self, $node_def, $node_path) = @_;
@@ -26,7 +25,7 @@ sub add_node        {
 }
 sub remove_node     {
     my ($self, $node_path) = @_;
-    $self->root->add_node( $node, $node_path );
+    $self->root->remove_node( $node_path );
 }
 
 

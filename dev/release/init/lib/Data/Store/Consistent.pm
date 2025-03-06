@@ -8,7 +8,7 @@ use Data::Store::Consistent::Schema;
 use Data::Store::Consistent::Type;
 
 sub new {
-    my ($pkg, $schema, $type_defs, $config) = @_; # maybe config
+    my ($pkg, $schema, $type_defs, $config) = @_; # maybe config init data ?
     return unless ref $schema eq 'HASH'
            and (not defined $type_defs or ref $type_defs eq 'ARRAY');
 

@@ -11,7 +11,7 @@ sub new {
     return 'got no node to access' unless ref $node eq 'Data::Store::Consistent::Node::Inner'
                                        or ref $node eq 'Data::Store::Consistent::Node::Outer';
 
-    bless { name => $name, description => $description // '', note => $note // '', child => {} };
+    bless { node => $node, read => $read_permission, write => $write_permission};
 }
 
 

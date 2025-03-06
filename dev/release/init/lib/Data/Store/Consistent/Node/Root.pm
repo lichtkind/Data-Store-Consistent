@@ -5,7 +5,7 @@ package Data::Store::Consistent::Node::Root;
 use v5.12;
 use warnings;
 use Data::Store::Consistent::Node::Inner;
-use Data::Store::Consistent::Node::Actions;
+use Data::Store::Consistent::Node::Accessor;
 
 
 sub new {
@@ -65,7 +65,7 @@ sub add_node        {
 
 sub remove_node     {
     my ($self, $node_path) = @_;
-    return 'can not remove root node' unless defined $node_name and $node_name;
+    return 'can not remove root node' unless defined $node_path and $node_path;
     my @names = split_path($node_path);
     my $last_name = pop @names;
     my $parent_path = join_path(@names);
@@ -84,7 +84,6 @@ sub read_node {
 }
 
 sub silent_read_node {
-    my ($self, $node_path) = @_;
     my ($self, $node_path) = @_;
     my $node = $self->get_node( $node_path );
     return $node unless ref $node;

@@ -32,11 +32,11 @@ sub exists {
 sub get_property {
     my ($name, $property) = @_;
     return "need a type name as first argument" unless defined $name and $name;
-    return "type $name is not element of this set" unless exists $self->{ $name };
-    return "need a type property for $name as second argument" unless defined $property and $property;
-    return $self->{ $name }{'help'}          if $property eq 'help';
-    return $self->{ $name }{'type_check'}    if $property eq 'type_checker';
-    return $self->{ $name }{'default_value'} if $property eq 'default_value';
+    # return "type $name is not element of this set" unless exists $self->{ $name };
+    # return "need a type property for $name as second argument" unless defined $property and $property;
+    # return $self->{ $name }{'help'}          if $property eq 'help';
+    # return $self->{ $name }{'type_check'}    if $property eq 'type_checker';
+    # return $self->{ $name }{'default_value'} if $property eq 'default_value';
     return "unknown type property: $property, try type_chacker, help or default_value";
 }
 
@@ -48,7 +48,7 @@ Data::Store::Consistent::Type::Store::add (
         for @Data::Store::Consistent::Type::Default::basic,
             @Data::Store::Consistent::Type::Default::parametric,
             @Data::Store::Consistent::Type::Default::argument,
-            @Data::Store::Consistent::Type::Default::property
+            @Data::Store::Consistent::Type::Default::property,
             @Data::Store::Consistent::Type::Default::combinator;
 
 1;

@@ -3,32 +3,35 @@
 
 # Main features
  ===============
-  + HoAoH store of data
-    - always adheres to contraints
-    - every node has an path like ID
-    - read and write of nodes and subtrees
-  + restricted read access
-    - give methods IO object that has only access of node or subtree
-  + restricted write access
-    - typed (input checks)
-    - only when value really changes
+  + HoH store of data that always adheres to defined constraints
+    - every node has an path like ID and other properties
+    - read and write to leaves and subtrees (inner nodes)
+  + restricted read and write access
+    - optional permissions per node
+    - create accessor objetcs with even less rights to cerain nodes
+    - data put in has to be typed (adhere to input checks checks)
+    - its a write only when value really changes
   + read and write events
     - triggered by read or write of nodes
-    - recalculates other node values
-    - with given callback
+    - causes to recalculate values of other nodes with given code or subroutine names
+    - triggereing also other code
     - prevent circular dependencies
 
 
 # Glossary
 
-   schema: defines tree structure of data and properties of each nodes and triggers
-   node: node in this data tree
-   outer node (leave): holds data
-   inner node: holds other nodes
-   type: defines shape data has to adhere
-   event: gets triggered when node is read, written or both
-   callback: functions that gets called by event
+    DSC: this module
+    data tree: data structure held by DSC
+    nodes: parts of the data tree
+    leave aka outer node: node that actuall holds an adressable simple or complex compound value
+    inner node or just node: node that actuall holds an adressable simple or complex compound value
+    schema: data structure that defines a data tree with all node properties
+    (data) type: defines shape and properties of data one leave holds
+    event: routine that runs (triggeres) when a node is read or written
+    callback: functions that gets called by event
 
+
+# Node Properties
 
  = root : ?~node + %children
  = inner:
@@ -36,29 +39,27 @@
     2 %children
     ----
     3 ~description
-    4 ~permission: read(fill) copy(paste) paste(read) write(only copy) full(r+w)
+    4 ~permission: full read write secret constant hidden
+                   direct:   ;  above:
     5 ~note
     =====
-    - @read_trigger
-    - @write_trigger
+    - &read_trigger
+    - &write_trigger
 
  = outer:
     1 ~name
     2 ~description
     3 ~permission
-    4 ~type_def|%type_def:
+    4 ~type | %type_def: num{0,1} | {name => '', help => , code => '', argument => '/path/to/node'}
     ----
-    5 ? ~note
-    6 ? $default_value
-    7 !6 &writer:
-    8 ?7 @writer_trigger: ~node_path ? when &writer :: node_name/node_name # on read event
-    9 ?7 @writer_param: ~node_path ? when &writer :: node_name/node_name # on write event
-   10 ? @type_param: ~node_path :: node_name/node_name                 # on write event
+    5 ~note
+    6 $default_value
+    7 %writer: {code => '', trigger => '' -- arguments => ['/path/to/node'], }
     =====
-    - typechecker
-    - equality_checker
-    - @read_trigger
-    - @write_trigger
+    - &typechecker
+    - &equality_checker
+    - &read_trigger
+    - &write_trigger
 
 
 # Permissions
@@ -72,7 +73,7 @@
           L      L    full      (RW always)
 
 
-# Schema
+# Schema: HoH
 
 
 
@@ -80,7 +81,7 @@ callback:
 
     $name, @trigger(event), $code
 
-#Types:
+# Types:
 
  - enum()
    spos_int : int({1,})

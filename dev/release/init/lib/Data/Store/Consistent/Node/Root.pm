@@ -100,7 +100,7 @@ sub write_node {
 
 sub fill {
     my ($self, $data) = @_;
-    $self->write( $data );
+    $self->write( $data, 'fill' );
 }
 
 

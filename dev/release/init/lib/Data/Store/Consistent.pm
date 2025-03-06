@@ -23,6 +23,10 @@ sub new {
     bless { data_tree => $data_tree };
 }
 
+sub destroy {
+    my ($self, $node_path) = @_;
+}
+
 #### schema ############################################################
 sub add_type        {
     my ($self, $type_def) = @_;

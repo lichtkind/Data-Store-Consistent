@@ -11,11 +11,22 @@ sub is_valid {
     my ($schema ) = @_;
 
 }
-
-sub is_node_definition {
-    my ($definition) = @_;
+sub is_node_definition { is_inner_node_definition($_[0]) or is_outer_node_definition($_[0]) }
+sub is_inner_node_definition {
+    my ($def) = shift;
+}
+sub is_outer_node_definition {
+    my ($def) = shift;
 
 }
+
+sub is_permission {
+    my ($str) = shift;
+}
+sub is_writer {
+    my ($str) = shift;
+}
+
 
 sub data_tree_from_schema {
     my ($schema ) = @_;
@@ -31,12 +42,17 @@ sub node_from_definition {
 }
 
 sub schema_from_data_tree {
-    my ($tree ) = @_;
+    my ($tree) = @_;
     my $schema;
     $schema;
 }
 
-sub definition_from_node {
+sub definition_from_inner_node {
+    my ($node) = @_;
+    my $definition;
+    $definition;
+}
+sub definition_from_outer_node {
     my ($node) = @_;
     my $definition;
     $definition;
@@ -46,44 +62,30 @@ sub definition_from_node {
 __END__
 Data::Store::Consistent::Node::Root::join_path()
 
-          R      W
-          ---------
-          W      W    hidden (code only for writer)
-          L      -    constant
-          -      L    secret
-          G      L    write
-          L      G    read
-          L      L    full
-
-{ name => 'der', children => {} }
-{ name => 'der', children => {} }
 
  = inner:
     1 ~name
     2 %children
     ----
-    3 ~description // ''
-    4 ~permission // full
-    5 ~note // ''
+    3 ~description
+    4 ~permission: full read write secret constant hidden
+                   direct:   ;  above:
+    5 ~note
     =====
-    - @read_trigger
-    - @write_trigger
-
+    - &read_trigger
+    - &write_trigger
 
  = outer:
     1 ~name
     2 ~description
     3 ~permission
-    4 ~type_def|%type_def:
+    4 ~type | %type_def: num{0,1} | {name => '', help => , code => '', argument => '/path/to/node'}
     ----
-    5 ? ~note
-    6 ? $default_value // $type.default_value
-    7 !6 &writer:
-    8 ?7 @writer_trigger: ~node_path ? when &writer :: node_name/node_name # on read event
-    9 ?7 @writer_param: ~node_path ? when &writer :: node_name/node_name # on write event
-   10 ? @type_param: ~node_path :: node_name/node_name                 # on write event
+    5 ~note
+    6 $default_value
+    7 %writer: {code => '', trigger => '' -- arguments => ['/path/to/node'], }
     =====
-    - typechecker
-    - equality_checker
-    - @read_trigger
-    - @write_trigger
+    - &typechecker
+    - &equality_checker
+    - &read_trigger
+    - &write_trigger

@@ -8,7 +8,7 @@ use Data::Store::Consistent::Type;
 
 sub new {
     # my ($pkg, $def) = @_;
-    #~ my ($pkg, $name, $description, $link_up, $type, $writer, $write_call_back, $read_call_back) = @_;
+    my ($pkg, $name, $ype, $description, $permission, $note, $default_value, $read_trigger, $write_trigger) = @_;
     #~ return 'need a data set object as first argument' unless ref $type_set eq 'Data::Store::Consistent::Type::Set';
     #~ return 'need a node name as second argument' unless defined $name and $name;
     #~ return 'need help text as third argument' unless defined $help and $help;
@@ -60,3 +60,19 @@ sub reset {
 1;
 
 __END__
+
+= outer:
+    1 ~name
+    2 ~type | %type_def | { type => ''| type_def => {}|, argument => {name => '/path/to/node'}}
+    3 ~description
+    ----
+    4 ~permission
+    5 ~note
+    6 $default_value
+    7 %writer: {code => '', trigger => ['']|argument, -- argument => {name => '/path/to/node'}, }
+    =====
+    - &typechecker
+    - &equality_checker
+    - &read_trigger
+    - &write_trigger
+    - %callback : {read => {name => &sub}, write => {name => &sub}}

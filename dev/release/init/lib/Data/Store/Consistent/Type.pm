@@ -10,6 +10,15 @@ use Data::Store::Consistent::Type::Store;
 
 ########################################################################
 
+sub is_valid_description {
+    my ($description) = @_;
+
+}
+sub is_valid_definition {
+    my ($def) = @_;
+
+}
+
 sub add {
     my ($name, $def) = @_;
     my $type_or_error = Data::Store::Consistent::Type::Factory::create_type_object( $def );

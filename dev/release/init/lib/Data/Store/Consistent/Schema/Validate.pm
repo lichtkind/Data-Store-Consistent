@@ -4,7 +4,7 @@
 package Data::Store::Consistent::Schema::Validate;
 use v5.12;
 use warnings;
-use Data::Store::Consistent::Tree;
+use Data::Store::Consistent::Type;
 
 
 sub is_valid { int ! tree( $_[0] ) }
@@ -13,8 +13,17 @@ sub tree {
     my ($schema) = @_;
     return 'schema is no HASH' unless ref $schema eq 'HASH';
     my ($error_sum, $node_paths) = _tree( $schema );
-
-    # validate node paths in arguments
+    my $path (@$node_paths){
+        my $node_pointer = $schema;
+        my $name (split_path( $path )){
+            $node_pointer = $node_pointer->{'child'} if exists $node_pointer->{'child'};
+            unless (exists $node_pointer->{ $name }){
+                $error_sum .= "node path $path does not exist; \n";
+                last;
+            }
+            $node_pointer = $node_pointer->{ $name };
+        }
+    }
     return $error_sum;
 }
 sub _tree {
@@ -69,20 +78,22 @@ sub outer_node {
     $error_sum .= 'lacks name property; ' unless exists $def->{'name'};
     $error_sum .= 'lacks type property; ' unless exists $def->{'type'};
     $error_sum .= 'lacks description property; ' unless exists $def->{'description'};
+    my ($error, $paths);
     for my $key (keys %$def) {
         my $value = $def->{$key};
-        if    ($key eq 'name')       { $error_sum .= 'name property is not a string; '    unless is_str( $value ) }
-        elsif ($key eq 'note')       { $error_sum .= 'note contains no string; '          unless is_str( $value ) }
-        elsif ($key eq 'description'){ $error_sum .= 'description contains no string;'    unless is_str( $value ) }
+        if    ($key eq 'name')       { $error_sum .= 'name property is not a string; '          unless is_str( $value ) }
+        elsif ($key eq 'description'){ $error_sum .= 'description property contains no string;' unless is_str( $value ) }
+        elsif ($key eq 'note')       { $error_sum .= 'note property contains no string; '       unless is_str( $value ) }
         elsif ($key eq 'defaul_value'){}
-        elsif ($key eq 'permission') { my $error = permission( $value );
-                                       $error_sum .= 'malformed premission def: '.$error  if $error }
-        elsif ($key eq 'writer')     { my $error = writer( $value );
-                                       $error_sum .= 'malformed writer def: '.$error      if $error }
-        elsif ($key eq 'type')       {       }
-        else                         { $error_sum .= "contained unknow property $key;" }
-
-        # collect node paths in arguments
+        elsif ($key eq 'permission') { $error = permission( $value );
+                                       $error_sum .= 'malformed premission def: '.$error if $error }
+        elsif ($key eq 'writer')     { ($error, $paths) = writer( $value );
+                                       $error_sum .= 'malformed writer def: '.$error    if $error;
+                                       push @$node_paths, @$paths if ref $paths eq 'ARRAY' and @$paths;
+        } elsif ($key eq 'type'      { ($error, $paths) = type( $value );
+                                       $error_sum .= 'malformed type def: '.$error    if $error;
+                                       push @$node_paths, @$paths if ref $paths eq 'ARRAY' and @$paths;
+        } else                       { $error_sum .= "contained unknow property $key;" }
     }
     return $error_sum, $node_paths;
 }
@@ -169,8 +180,6 @@ sub join_path {
 
 1;
 __END__
-Data::Store::Consistent::Node::Root::join_path()
-
 
  = inner:
     1 ~name

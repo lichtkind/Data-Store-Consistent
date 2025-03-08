@@ -60,8 +60,8 @@ sub inner_node {
     for my $key (keys %$def) {
         my $value = $def->{$key};
         if    ($key eq 'name')       { $error_sum .= 'name property contains no string; ' unless is_str( $value ) }
-        elsif ($key eq 'note')       { $error_sum .= 'note contains no string; '          unless is_str( $value ) }
         elsif ($key eq 'description'){ $error_sum .= 'description contains no string;'    unless is_str( $value ) }
+        elsif ($key eq 'note')       { $error_sum .= 'note contains no string; '          unless is_str( $value ) }
         elsif ($key eq 'child')      { $error_sum .= 'children are not stored in a HASH;' if ref $value ne 'HASH' }
         elsif ($key eq 'permission') { my $error = permission( $value );
                                        $error_sum .= 'malformed premission def: '.$error  if $error }
@@ -84,16 +84,16 @@ sub outer_node {
         if    ($key eq 'name')       { $error_sum .= 'name property is not a string; '          unless is_str( $value ) }
         elsif ($key eq 'description'){ $error_sum .= 'description property contains no string;' unless is_str( $value ) }
         elsif ($key eq 'note')       { $error_sum .= 'note property contains no string; '       unless is_str( $value ) }
-        elsif ($key eq 'defaul_value'){}
+        elsif ($key eq 'default_value'){}
         elsif ($key eq 'permission') { $error = permission( $value );
                                        $error_sum .= 'malformed premission def: '.$error if $error }
         elsif ($key eq 'writer')     { ($error, $paths) = writer( $value );
                                        $error_sum .= 'malformed writer def: '.$error    if $error;
-                                       push @$node_paths, @$paths if ref $paths eq 'ARRAY' and @$paths;
-        } elsif ($key eq 'type'      { ($error, $paths) = type( $value );
+                                       push @$node_paths, @$paths if ref $paths eq 'ARRAY' and @$paths; }
+        elsif ($key eq 'type'        { ($error, $paths) = type( $value );
                                        $error_sum .= 'malformed type def: '.$error    if $error;
-                                       push @$node_paths, @$paths if ref $paths eq 'ARRAY' and @$paths;
-        } else                       { $error_sum .= "contained unknow property $key;" }
+                                       push @$node_paths, @$paths if ref $paths eq 'ARRAY' and @$paths;  }
+        else                         { $error_sum .= "contained unknow property $key;" }
     }
     return $error_sum, $node_paths;
 }
@@ -106,36 +106,55 @@ sub permission {
     $str =~ tr/ //d;
     if (index( $str, ':' ) > -1){
     } else {
-        return 'none of the acceptable values: full, write, read, secret, constant, none'
+        return "got $str, but none of the acceptable values: full, write, read, secret, constant, none"
             if $str ne 'full' and $str ne 'write' and $str ne 'read'
            and $str ne 'none' and $str ne 'secret' and $str ne 'constant';
     }
     for my $part (split ';', $str){
         my @domain_right = split ':', $part;
-        return 'double colon ":" can be used only once in one scope declaration as in - "direct:write"'
+        return 'double colon ":" can be used only once in one scope declaration as in - "direct:write[;...]"'
             unless @domain_right == 2;
         return 'only scopes are "direct" and "bulk"' unless $domain_right[0] eq 'direct' or $domain_right[0] eq 'bulk';
-        return 0 unless $domain_right[1] eq 'read'   or $domain_right[1] eq 'write' or
-                        $domain_right[1] eq 'full'   or $domain_right[1] eq 'none';
+        return "got $str, but none of the acceptable values: full, write, read and none in scope $domain_right[0]"
+            unless $domain_right[1] eq 'read'   or $domain_right[1] eq 'write' or
+                   $domain_right[1] eq 'full'   or $domain_right[1] eq 'none';
     }
     return 0;
 }
 
-sub writer { # {code => '', ref => '', trigger => '' -- argument => {name => '/path/to/node'}}
+sub writer {
     my ($def) = shift;
-    return 0 unless ref $def eq 'HASH';
-    return 0 unless exists $def->{'code'} and exists $def->{'trigger'};
+    return 'is not a HASH' unless ref $def eq 'HASH';
+    my $error_sum = '';
+    $error_sum .= 'lacks code property; '    unless exists $def->{'code'};
+    $error_sum .= 'lacks trigger property; ' unless exists $def->{'trigger'};
     for my $key (keys %$def) {
         my $value = $def->{$key};
-        if ($key eq 'code' or $key eq 'trigger')  { return 0 unless is_str( $value ) }
-        elsif ($key eq 'argument'){
-            # every value is str
-        } else                                    { return 0 }
+        if    ($key eq 'code')    { if (is_str( $value )){ $error_sum .= 'code has to be wrpped in an anon sub; '
+                                        unless $value =~ /^\s*sub\s*{.+}\s*$/;
+                                    } else { $error_sum .= 'value writer property "code" is not a string; ' }  }
+        elsif ($key eq 'trigger') { $error_sum .= 'value writer property "trigger" has to be a HASH or "argument";'
+                                        if ref( $value ) ne 'HASH' and $value ne 'argument'; }
+        elsif ($key eq 'argument'){ if (ref( $value ) ne 'HASH') {
+                                        for my $k (keys %$value) {
+                                            $error_sum .= 'writer argument $k has to node path associated;'
+                                                unless is_str($value->{$k});
+                                        }
+                                    } else { $error_sum .= 'writer property "argument" has to be a HASH;' } }
+        else                      { $error_sum .= "trigger def has unknow property $key;"}
     }
+    return $error_sum;
+}
 
-    return 0 unless exists $def->{'code'} and is_str($def->{'code'});
-    return 0 unless exists $def->{'trigger'} and is_str($def->{'trigger'});
-    return 0 unless exists $def->{'trigger'} and is_str($def->{'trigger'});
+sub type { # {read => {name => &sub}, write => {name => &sub}}
+    my ($def) = shift;
+    if (is_str($def))  { return 0 unless Data::Store::Consistent::Type::is_valid_description( $def ) }
+    elsif (ref $def eq 'HASH') {
+        if    (exists $def->{'type'})     { return 0 unless Data::Store::Consistent::Type::is_valid_description( $def->{'type'} ) }
+        elsif (exists $def->{'type_def'}) { return 0 unless Data::Store::Consistent::Type::is_valid_definition(  $def->{'type_def'} ) }
+        else                              { return 0 unless Data::Store::Consistent::Type::is_valid_definition(  $def ) }
+    } else {
+    }
 }
 
 sub callback { # {read => {name => &sub}, write => {name => &sub}}
@@ -153,16 +172,6 @@ sub callback { # {read => {name => &sub}, write => {name => &sub}}
     return 0 unless exists $def->{'code'}    and is_str($def->{'code'});
     return 0 unless exists $def->{'trigger'} and is_str($def->{'trigger'});
     return 0 unless exists $def->{'trigger'} and is_str($def->{'trigger'});
-}
-
-sub type { # {read => {name => &sub}, write => {name => &sub}}
-    my ($def) = shift;
-    if (is_str($def))  { return 0 unless Data::Store::Consistent::Type::is_valid_description( $def ) }
-    elsif (ref $def eq 'HASH') {
-        if    (exists $def->{'type'})     { return 0 unless Data::Store::Consistent::Type::is_valid_description( $def->{'type'} ) }
-        elsif (exists $def->{'type_def'}) { return 0 unless Data::Store::Consistent::Type::is_valid_definition(  $def->{'type_def'} ) }
-        else                              { return 0 unless Data::Store::Consistent::Type::is_valid_definition(  $def ) }
-    }
 }
 
 #### node path ops #####################################################

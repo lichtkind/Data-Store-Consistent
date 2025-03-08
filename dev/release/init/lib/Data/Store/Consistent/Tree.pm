@@ -28,28 +28,26 @@ sub remove_node     {
     $self->root->remove_node( $node_path );
 }
 
-
-
 #### trigger ###########################################################
-sub add_trigger      {
+sub add_callback      {
     my ($self, $node_path, @param) = @_;
     my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->triggers->add( @param );
 }
-sub remove_trigger      {
+sub remove_callback      {
     my ($self, $node_path, @param) = @_;
     my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->triggers->remove( @param );
 }
-sub freeze_trigger    {
+sub freeze_callback    {
     my ($self, $node_path, @param) = @_;
     my $node = $self->get_node( $node_path );
     return $node unless ref $node;
     $node->triggers->freeze( @param );
 }
-sub thaw_trigger    {
+sub thaw_callback    {
     my ($self, $node_path, @param) = @_;
     my $node = $self->get_node( $node_path );
     return $node unless ref $node;
@@ -57,20 +55,9 @@ sub thaw_trigger    {
 }
 
 #### base IO ###########################################################
-sub read_data {
-    my ($self, $node_path) = @_;
-    $self->root->read_node( $node_path );
-}
-
-sub silent_read_data {
-    my ($self, $node_path) = @_;
-    $self->root->silent_read_node( $node_path );
-}
-
-sub write_data      {
-    my ($self, $node_path, $data) = @_;
-    $self->root->write_node( $node_path, $data );
-}
+sub read_data        { my ($self, $node_path) = @_; $self->root->read_node( $node_path ); }
+sub silent_read_data { my ($self, $node_path) = @_; $self->root->silent_read_node( $node_path ); }
+sub write_data       { my ($self, $node_path, $data) = @_; $self->root->write_node( $node_path, $data ); }
 
 1;
 

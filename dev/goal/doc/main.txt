@@ -20,16 +20,21 @@
 
 # Glossary
 
-    DSC: this module
-    data tree: data structure held by DSC
-    nodes: parts of the data tree
-    leave aka outer node: node that actuall holds an adressable simple or complex compound value
-    inner node or just node: node that actuall holds an adressable simple or complex compound value
-    schema: data structure that defines a data tree with all node properties
-    (data) type: defines shape and properties of data one leave holds
+    DSC:        this module
+    data tree:  data structure held by DSC
+    nodes:      parts (chain links) of the data tree
+    outer node: holds simple or complex compound value
+    inner node: holds outer nodes as children
+    schema:     data structure that defines a data tree with all node properties
+    node_path:  adress of eatch node = path from root to it over node names: /name/name:READ
+    node properties:
+        (data) type: defines shape and properties of data one leave holds
+        callback: functions that gets called by event
     event: routine that runs (triggeres) when a node is read or written
-    callback: functions that gets called by event
+    callback
 
+
+# Schema: HoH
 
 # Node Properties
 
@@ -39,7 +44,7 @@
     2 %children
     ----
     3 ~description
-    4 ~permission: full read write secret constant none| direct: f|r|w|n ;  bulk:f|r|w|n
+    4 ~permission --> #Permissions
     5 ~note
     =====
     - &read_trigger
@@ -54,7 +59,7 @@
     4 ~permission
     5 ~note
     6 $default_value
-    7 %writer: {code => '', trigger => '', -- argument => {name => '/path/to/node'}, }
+    7 %writer: {code => 'sub {...}', trigger => {name => 'node_path'}|'argument', -- argument => {name => '/path/to/node'}, }
     =====
     - &typechecker
     - &equality_checker
@@ -63,7 +68,10 @@
     - %callback : {read => {name => &sub}, write => {name => &sub}}
 
 
-# Permissions
+# Permissions:
+    - either constnat: qw/full read write secret constant none/
+    - or direct: 'full | read | write | none; bulk: full | read | write | none'
+
           R      W
           ---------
           -      -    none      (RW only for writer code )
@@ -73,18 +81,23 @@
           L      G    read      (read always, write only from inner)
           L      L    full      (RW always)
 
+# Event
+    - read
+    - write
 
-# Schema: HoH
 
+# Callback:
+    - code:
+    - trigger: { name => path:read}
 
-
-callback:
-
-    $name, @trigger(event), $code
 
 # Types:
-
- - enum()
-   spos_int : int({1,})
-   pattern : @[$nr]<str{$len}>
-   color: @[3]<int{0,255}>
+    + basic: num, int, str, bool
+    + parametric:
+    + argument:
+    + property:
+    + combinators:
+    + examples:
+        spos_int : int({1,})
+        pattern : @[$nr]<str{$len}>
+        color: @[3]<int{0,255}>

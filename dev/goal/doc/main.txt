@@ -39,33 +39,34 @@
     2 %children
     ----
     3 ~description
-    4 ~permission: full read write secret constant hidden
-                   direct:   ;  above:
+    4 ~permission: full read write secret constant none| direct: f|r|w|n ;  bulk:f|r|w|n
     5 ~note
     =====
     - &read_trigger
     - &write_trigger
+    - %callback : {read => {name => &sub}, write => {name => &sub}}
 
  = outer:
     1 ~name
-    2 ~description
-    3 ~permission
-    4 ~type | %type_def: num{0,1} | {name => '', help => , code => '', argument => '/path/to/node'}
+    2 ~type | %type_def | { type => ''| type_def => {}|, argument => {name => '/path/to/node'}}
+    3 ~description
     ----
+    4 ~permission
     5 ~note
     6 $default_value
-    7 %writer: {code => '', trigger => '' -- arguments => ['/path/to/node'], }
+    7 %writer: {code => '', trigger => '', -- argument => {name => '/path/to/node'}, }
     =====
     - &typechecker
     - &equality_checker
     - &read_trigger
     - &write_trigger
+    - %callback : {read => {name => &sub}, write => {name => &sub}}
 
 
 # Permissions
           R      W
           ---------
-          W      W    hidden    (RW only for writer code )
+          -      -    none      (RW only for writer code )
           L      -    constant  (read only locally at outer node)
           -      L    secret    (write only locally at outer node)
           G      L    write     (write always, read only from inner)

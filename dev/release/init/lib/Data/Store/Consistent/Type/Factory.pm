@@ -5,6 +5,7 @@ package Data::Store::Consistent::Type::Factory;
 use v5.12;
 use warnings;
 use Scalar::Util qw/blessed looks_like_number/;
+use List::Util qw/reduce/;
 use Data::Store::Consistent::Type::Store;
 
 sub create_type_object {

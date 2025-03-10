@@ -1,37 +1,28 @@
 
-# assemble type objects from definition
+# extendable collection of type objects came from D::S::C::Type
 
-package Data::Store::Consistent::Type::Factory;
+package Data::Store::Consistent::Type::Parametric;
 use v5.12;
 use warnings;
 use Scalar::Util qw/blessed looks_like_number/;
-use List::Util qw/reduce sum0/;
-use Data::Store::Consistent::Type::Store;
+use Data::Store::Consistent::Type::Definition;
 
-
-sub assemble_from_definition {
-    my ($def) = @_;
+sub new {
+    my $pkg = shift;
     my $set = {};
-    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::basic;
-    bless $set;
-}
-
-sub create_type_object {
-    my ($def) = @_;
-    my $set = {};
-    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::basic;
+    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::parametric;
     bless $set;
 }
 
 sub add_type_def {
     my ($self, $def) = @_;
     return unless ref $def eq 'HASH' and exists $def->{'name'} and exists $def->{'help'};
-    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'},
+    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'}, $def->{'param'},
                      $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
 }
 
 sub add_type {
-    my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
+    my ($self, $name, $help, $condition, $parameter, $parent, $default_value, $equality) = @_;
     return 'type misses name'                      unless defined $name and $name and not ref $name;
     return "type $name misses help text"           unless defined $help and $help and not ref $help;
     return "type $name already exists is type set" if exists $self->{ $name };
@@ -49,18 +40,21 @@ sub _add_type {
     my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
     $default_value = $self->{$parent}{'default_value'} unless defined $default_value;
 
-    my $code = (defined $condition)
-               ? '  return "$name value: $value'." needed to be of type $name, but failed test: $help!\" unless $condition;\n" : '';
-    $code = $self->{$parent}{'code'} . $code if defined $parent;
-    my $whole_sub = "sub { \n".'  my($value, $name, $params) = @_;'."\n".
-                               '  $name //= ""; no warnings "all";'."\n". $code . "  return ''\n}";
-    my $coderef = eval $whole_sub;
-    return "type '$name' condition source 'code' - '$whole_sub' - could not eval because: $@ !" if $@;
+    my $checks = (defined $condition) ? [[$help, $condition]] : [];
+    $checks = [@{$self->{$parent}{'checks'}}, @$checks] if defined $parent;
+    my $source = '';
+    for my $help_code (@$checks) {
+        $source .= 'return "value $value'." needed to be of type $name, but failed test: $help_code->[0]\" unless $help_code->[1];"
+    }
+    $source = 'sub { my( $value) = @_; no warnings "all";'. $source . "return ''}";
+    my $coderef = eval $source;
+    return "type '$name' condition source 'code' - '$source' - could not eval because: $@ !" if $@;
 
     my $error = $coderef->( $default_value );
-    return "type '$name' default value does not conform to type checks: $error!" if $error;
+    return "type '$name' default value triggers type checks: $error!" if $error;
 
-    $equality = $self->{$parent}{'equality'} unless defined $equality;
+    $equality      = $self->{$parent}{'equality'} unless defined $equality;
+
     my $eq_ref;
     if (defined $equality) {
         my $eq_source = 'sub {($a, $b) = @_; return '.$equality.' }';
@@ -70,16 +64,24 @@ sub _add_type {
         $eq_ref = $self->{$parent}{'equality'}
     }
 
-    $parent = (not defined $parent)                   ? []
-            : (not exists $self->{$parent}{'parent'}) ? [$parent]
-            :                                           [$parent, @{$self->{$parent}{'parent'}}];
-
     $self->{$name} = { parent => $parent, default_value => $default_value,
-                       code => $code, type_check => $coderef, eqality => $eq_ref };
+                       checks => $checks, type_check => $coderef, eqality => $eq_ref };
     0;
 }
 
+########################################################################
+sub get_type_property {
+    my ($self, $name, $property) = @_;
+    return "need a type name as first argument" unless defined $name and $name;
+    return "type $name is not element of this set" unless exists $self->{ $name };
+    return "need a type property for $name as second argument" unless defined $property and $property;
+    return $self->{ $name }{'help'}          if $property eq 'help';
+    return $self->{ $name }{'type_check'}    if $property eq 'type_checker';
+    return $self->{ $name }{'default_value'} if $property eq 'default_value';
+    return "unknown type property: $property, try type_chacker, help or default_value";
+}
 
+sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
 
 ########################################################################
 1;

@@ -4,6 +4,8 @@
 package Data::Store::Consistent::Type::Store;
 use v5.12;
 use warnings;
+use Data::Store::Consistent::Type::Validate;
+use Data::Store::Consistent::Type::Default;
 
 my %type = (all => {}, parametric => {}, argument => {}, combinator => {},
             property_by_parent => {}, property_parents => {}, );
@@ -11,11 +13,8 @@ my %type = (all => {}, parametric => {}, argument => {}, combinator => {},
 ########################################################################
 sub add_type {
     my ($type) = @_;
-    return 'type has to be a HASH' unless ref $type eq 'HASH';
-    my $kind = (exists $type->{'param_name'}) ? 'parametric' :
-               (exists $type->{'value'})      ? 'argument'   :
-               (exists $type->{'type'})       ? 'property'   :
-               (exists $type->{'subtype'})    ? 'combinator' : 'basic';
+    my ($error, $kind) = Data::Store::Consistent::Type::Validate::get_kind($type);
+    return $error if $error;
     my $name = $type->{'name'};
     my $parent = $type->{'parent'};
     if ($kind eq 'property'){
@@ -27,7 +26,6 @@ sub add_type {
         $type{ 'all' }{ $name } = $kind;
         $type{ $kind }{ $name } = $type;
     }
-
 }
 
 ########################################################################
@@ -69,44 +67,4 @@ sub get_type_property {
     return $self->{ $name }{'default_value'} if $property eq 'default_value';
     return "unknown type property: $property, try type_chacker, help or default_value";
 }
-
 sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
-
-basic
-  ~name
-   --
-  ~help
-  ~parent         |
-  $default_value  |
-  ~check_code     |
-  ~eq_code        |
-   ==
-   source
-   check_ref
-   eq_ref
-
-parametric: +
-  :param_name
-   param_type
-
-argument: +
-   name
-  ~parent
- :$value
-
-property: +
-  ~name
-  ~help
-  ~code
- :~type
-  ~parent
-
-combinator: +
-  ~name
-  ~help ?
-  ~parent
-  @~check_code
-  @~eq_code
- :%subtype name => pos
-  ~$default_value
-

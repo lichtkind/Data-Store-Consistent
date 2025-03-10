@@ -5,16 +5,8 @@ package Data::Store::Consistent::Type::Factory;
 use v5.12;
 use warnings;
 use Scalar::Util qw/blessed looks_like_number/;
-use List::Util qw/reduce sum0/;
+use List::Util qw/reduce/;
 use Data::Store::Consistent::Type::Store;
-
-
-sub assemble_from_definition {
-    my ($def) = @_;
-    my $set = {};
-    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::basic;
-    bless $set;
-}
 
 sub create_type_object {
     my ($def) = @_;

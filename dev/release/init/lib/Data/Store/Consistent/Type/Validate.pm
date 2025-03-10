@@ -1,77 +1,152 @@
 
 # assemble type objects from definition
 
-package Data::Store::Consistent::Type::Factory;
+package Data::Store::Consistent::Type::Validate;
 use v5.12;
 use warnings;
-use Scalar::Util qw/blessed looks_like_number/;
-use List::Util qw/reduce/;
-use Data::Store::Consistent::Type::Store;
 
-sub create_type_object {
+#### public API ########################################################
+sub definition {
     my ($def) = @_;
-    my $set = {};
-    add_type_def($set, $_) for @Data::Store::Consistent::Type::Definition::basic;
-    bless $set;
+    my $kind = get_kind( $def );
+    return "type definition is no HASH" unless $kind;
+    my $error = ($kind eq 'basic')      ? basic(      $def ) :
+                ($kind eq 'parametric') ? parametric( $def ) :
+                ($kind eq 'argument')   ? argument(   $def ) :
+                ($kind eq 'property')   ? property(   $def ) :
+                ($kind eq 'parametric') ? parametric( $def ) :
+                ($kind eq 'combinator') ? combinator( $def ) : 'unknown kind of type';
+    return $error, $kind;
 }
 
-sub add_type_def {
-    my ($self, $def) = @_;
-    return unless ref $def eq 'HASH' and exists $def->{'name'} and exists $def->{'help'};
-    _add_type($self, $def->{'name'}, $def->{'help'}, $def->{'code'},
-                     $def->{'parent'}, $def->{'default'}, $def->{'equality'} );
+sub get_kind {
+    my ($def) = @_;
+    return unless ref $def eq 'HASH';
+    my $kind = (exists $def->{'param_name'})    ? 'parametric' :
+               (exists $def->{'value'})         ? 'argument'   :
+               (exists $def->{'type'})          ? 'property'   :
+               (exists $def->{'component_pos'}) ? 'combinator' : 'basic';
+    $kind;
 }
-
-sub add_type {
-    my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
-    return 'type misses name'                      unless defined $name and $name and not ref $name;
-    return "type $name misses help text"           unless defined $help and $help and not ref $help;
-    return "type $name already exists is type set" if exists $self->{ $name };
-    return "type $name requires unknow parent"     if defined $parent and not exists $self->{ $parent };
-    my $has_parent = int(defined $parent and $parent and not ref $parent);
-    return "type $name misses source code of condition or parent"
-                     unless (defined $condition and $condition and not ref $condition) or $has_parent;
-    return "type $name misses default value or parent"
-                     unless (defined $default_value and not ref $default_value) or $has_parent;
-    return "type $name misses equality chacker code or parent"
-                     unless (defined $equality and $equality and not ref $equality) or $has_parent;
-    $self->_add_type( $name, $help, $condition, $parent, $default_value, $equality );
-}
-sub _add_type {
-    my ($self, $name, $help, $condition, $parent, $default_value, $equality) = @_;
-    $default_value = $self->{$parent}{'default_value'} unless defined $default_value;
-
-    my $code = (defined $condition)
-               ? '  return "$name value: $value'." needed to be of type $name, but failed test: $help!\" unless $condition;\n" : '';
-    $code = $self->{$parent}{'code'} . $code if defined $parent;
-    my $whole_sub = "sub { \n".'  my($value, $name, $params) = @_;'."\n".
-                               '  $name //= ""; no warnings "all";'."\n". $code . "  return ''\n}";
-    my $coderef = eval $whole_sub;
-    return "type '$name' condition source 'code' - '$whole_sub' - could not eval because: $@ !" if $@;
-
-    my $error = $coderef->( $default_value );
-    return "type '$name' default value does not conform to type checks: $error!" if $error;
-
-    $equality = $self->{$parent}{'equality'} unless defined $equality;
-    my $eq_ref;
-    if (defined $equality) {
-        my $eq_source = 'sub {($a, $b) = @_; return '.$equality.' }';
-        $eq_ref = eval $eq_source;
-        return "type '$name' equality source 'code' - '$eq_source' - could not eval because: $@ !" if $@;
-    } else {
-        $eq_ref = $self->{$parent}{'equality'}
-    }
-
-    $parent = (not defined $parent)                   ? []
-            : (not exists $self->{$parent}{'parent'}) ? [$parent]
-            :                                           [$parent, @{$self->{$parent}{'parent'}}];
-
-    $self->{$name} = { parent => $parent, default_value => $default_value,
-                       code => $code, type_check => $coderef, eqality => $eq_ref };
-    0;
-}
-
-
 
 ########################################################################
+sub basic {
+    my ($def) = @_;
+    return "type definition is no HASH" unless ref $def eq 'HASH';
+    my $error_sum = '';
+    $error_sum .= "type definition lacks property name\n" unless exists $def->{ 'name' };
+    unless (exists $def->{ 'parent' }){
+        for my $key (qw/check_code eq_code default_value/){
+            $error_sum .=  "type definition without property $key lacks parent\n" unless exists $def->{ $key };
+        }
+    }
+    return "type definition has to have both properties 'help' and 'check_code' \n"
+        if (exists $def->{ 'help' }) xor (exists $def->{ 'check_code' });
+    for my $key (qw/name help check_code eq_code parent/){
+        return "type $key has to be a string \n" if exists $def->{$key} and not is_str( $def->{$key} );
+    }
+    return $error_sum;
+}
+
+sub parametric {
+    my ($def) = @_;
+    return "type definition is no HASH" unless ref $def eq 'HASH';
+    my $error_sum = basic( $def );
+    for my $key (qw/param_name param_type/){
+        return "type definition lacks property $key" unless exists $def->{ $key };
+        return "type property $key has to be a string" unless is_str( $def->{ $key } );
+    }
+    return $error_sum;
+}
+
+sub argument {
+    my ($def) = @_;
+    return "type definition is no HASH" unless ref $def eq 'HASH';
+    for my $key (qw/name parent value/){
+        return "type definition lacks property $key" unless exists $def->{ $key };
+    }
+    return "type name has to be a string" unless is_str( $def->{'name'} );
+    return "type parent has to be a string" unless is_str( $def->{'parent'} );
+}
+
+sub property {
+    my ($def) = @_;
+    return "type definition is no HASH" unless ref $def eq 'HASH';
+    my $error_sum = '';
+    for my $key (qw/name help code type parent/){
+        return "type definition lacks property $key" unless exists $def->{ $key };
+        return "type property $key has to be a string" unless is_str( $def->{ $key } );
+    }
+    return $error_sum;
+}
+
+sub combinator {
+    my ($def) = @_;
+    return "type definition is no HASH" unless ref $def eq 'HASH';
+    my $error_sum = '';
+    for my $key (qw/name help check_code eq_properties component_check component_pos default_value parent/){
+        return "type definition lacks property $key" unless exists $def->{ $key };
+    }
+    for my $key (qw/name help parent default_value/){
+        return "combinator type property $key has to be a string" unless is_str( $def->{ $key } );
+    }
+    for my $key (qw/check_code eq_properties component_pos/){
+        return "combinator type property '$key' has to be an ARRAY"   unless ref $def->{ $key } eq 'ARRAY';
+    }
+    return "combinator type property 'component_check' has to be a HASH" unless ref $def->{ 'component_check' } eq 'HASH';
+    for my $val (values %{$def->{ 'component_check' }}, values %{$def->{ 'component_pos' }}, ){
+        return "combinator type property 'component_check' values have to be integer" unless defined $val and int $val == $val;
+    }
+    for my $val (@{$def->{ 'check_code' }}){
+        return "combinator type property 'check_code' has to be a list of strings" unless is_str( $val );
+    }
+    for my $val (@{$def->{ 'eq_properties' }}){
+        return "combinator type property 'eq_properties' has to be a list of strings" unless is_str( $val );
+    }
+    return $error_sum;
+}
+
+#### util ##############################################################
+sub is_str { (defined $_[0] and $_[0] and not ref $_[0]) ? 1 : 0 }
+
 1;
+
+__END__
+basic
+  ~name
+   --
+  ~help              +
+  ~check_code     |  +
+  ~eq_code        |
+  $default_value  |
+  ~parent         |
+   ==
+   source
+   check_ref
+   eq_ref
+
+parametric: +
+  :param_name
+   param_type
+
+argument: +
+  ~name
+  ~parent
+ :$value
+
+property: +
+  ~name
+  ~help
+  ~code
+ :~type
+  ~parent
+
+combinator: +
+  ~name
+  ~help ?
+  ~parent
+  @~check_code
+  @~eq_properties
+  %component_check  name => pos
+ :@component_pos    name, name
+  ~$default_value

@@ -40,10 +40,10 @@ our @argument = (
 );
 
 our @property = (
- {name=> 'length',    help=> '',                                 code=> '$value',         parent=> 'num'  ,         type_name=> '' },
- {name=> 'length',    help=> 'an string with length of $param',  code=> 'length($value)', parent=> 'str'  ,         type_name=> 'int' },
- {name=> 'length',    help=> 'number of ARRAY elements',         code=> '@$value',        parent=> ['ref','array'], type_name=> 'int' },
- {name=> 'length',    help=> 'number of HASH keys',              code=> 'keys(%$value)',  parent=> ['ref','hash'] , type_name=> 'int' },
+ {name=> 'length',    help=> '',                                 code=> '$value',         parent=> 'num'  ,   type=> '' },
+ {name=> 'length',    help=> 'an string with length of $param',  code=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
+ {name=> 'length',    help=> 'number of ARRAY elements',         code=> '@$value',        parent=> 'array',   type=> 'int' },
+ {name=> 'length',    help=> 'number of HASH keys',              code=> 'keys(%$value)',  parent=> 'hash' ,   type=> 'int' },
 );
 
 our @combinator = (

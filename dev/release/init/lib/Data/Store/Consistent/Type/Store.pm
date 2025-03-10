@@ -5,83 +5,53 @@ package Data::Store::Consistent::Type::Store;
 use v5.12;
 use warnings;
 
-my %all;
-my %basic;
-my %parametric;
-my %argument_by_parent;
-my %argument_parents;
-my %property_by_parent;
-my %property_parents;
-my %combinator;
+my %type = (all => {}, parametric => {}, argument => {}, combinator => {},
+            property_by_parent => {}, property_parents => {}, );
 
+########################################################################
+sub add_type {
+    my ($type) = @_;
+    return 'type has to be a HASH' unless ref $type eq 'HASH';
+    my $kind = (exists $type->{'param_name'}) ? 'parametric' :
+               (exists $type->{'value'})      ? 'argument'   :
+               (exists $type->{'type'})       ? 'property'   :
+               (exists $type->{'subtype'})    ? 'combinator' : 'basic';
+    my $name = $type->{'name'};
+    my $parent = $type->{'parent'};
+    if ($kind eq 'property'){
+        return "type property $name of $parent already exists" if exists $type{'all'}{ $name }
+               and (   ($all{ $type->{'name'} } ne 'property')
+                    or (exists $property_parents{$type->{'name'}}{$type->{'parent'}}));
+    } else {
+        return "type name $name is already in use" if exists $type{'all'}{ $name };
+        $type{ 'all' }{ $name } = $kind;
+        $type{ $kind }{ $name } = $type;
+    }
+
+}
+
+########################################################################
 sub get_type {
     my ($name) = @_;
     if (ref $name eq 'ARRAY') {
     } elsif (not ref $name){
     }
 }
-########################################################################
-sub add_basic {
-    my ($type) = @_;
-    return 'type has to be a HASH' unless ref $type eq 'HASH';
-    return 'type name is already used' if exists $all{ $type->{'name'} };
-    $all{ $type->{'name'} } = 'basic';
-    $basic{ $type->{'name'} } = $type;
+
+sub get_type_checker {
+    my ($name) = @_;
+    if (ref $name eq 'ARRAY') {
+    } elsif (not ref $name){
+    }
 }
-sub get_basic {
-    my ($type) = @_;
+sub get_eq_checker {
+    my ($name) = @_;
+    if (ref $name eq 'ARRAY') {
+    } elsif (not ref $name){
+    }
 }
 
-########################################################################
-sub add_parametric {
-    my ($type) = @_;
-    return 'type has to be a HASH' unless ref $type eq 'HASH';
-    return 'type name is already used' if exists $all{ $type->{'name'} };
-    $all{ $type->{'name'} } = 'parametric';
-    $parametric{ $type->{'name'} } = $type;
-}
-sub get_parametric {
-    my ($type) = @_;
-}
 
-sub add_argument {
-    my ($type) = @_;
-    return 'type has to be a HASH' unless ref $type eq 'HASH';
-    return 'type name is already used' if exists $all{ $type->{'name'} };
-    $all{ $type->{'name'} } = 'argument';
-    $argument{ $type->{'name'} } = $type;
-}
-sub get_argument {
-    my ($type) = @_;
-}
-
-########################################################################
-sub add_property {
-    my ($type) = @_;
-    return 'type has to be a HASH' unless ref $type eq 'HASH';
-    return 'type name is already used' if exists $all{ $type->{'name'} }
-        and (   ($all{ $type->{'name'} } ne 'property')
-             or exists $property_parents{$type->{'name'}}{$type->{'parent'}} );
-    $all{ $type->{'name'} } = 'property';
-    $property_parents{ $type->{'name'} }{ $type->{'parent'} } = $type;
-    $property_by_parent{ $type->{'parent'} } {$type->{'name'} } = $type;
-    my ($type) = @_;
-}
-sub get_propety {
-    my ($type) = @_;
-}
-
-########################################################################
-sub add_combinator {
-    my ($type) = @_;
-    return 'type has to be a HASH' unless ref $type eq 'HASH';
-    return 'type name is already used' if exists $all{ $type->{'name'} };
-    $all{ $type->{'name'} } = 'combinator';
-    $combinator{ $type->{'name'} } = $type;
-}
-sub get_combinator {
-    my ($type) = @_;
-}
 
 
 ########################################################################
@@ -137,6 +107,6 @@ combinator: +
   ~parent
   @~check_code
   @~eq_code
- :%sub_type name => pos
+ :%subtype name => pos
   ~$default_value
 

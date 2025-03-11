@@ -20,15 +20,15 @@ our @basic = (
  {name=> 'uc_str',    help=> 'upper case string',       code=> 'uc $value eq $value',        parent=> 'ne_str',  default=> 'A' },
  {name=> 'word',      help=> 'only word character',     code=> '$value =~ /^\w+$/',          parent=> 'ne_str',  default=> 'A' },
  {name=> 'lc_word',   help=> 'lower case word',         code=> 'lc $value eq $value',        parent=> 'word',    default=> 'a' },
- {name=> 'identifier',help=> 'string begins with a letter',code=> '$value =~ /^[a-z_]/',     parent=> 'lc_word',               },
+ {name=> 'identifier',help=> 'begins with a letter',    code=> '$value =~ /^[a-z_]/',        parent=> 'lc_word',               },
 );
 
 our @parametric = (
- {name=> 'min',       help=> 'greater or equal $param', code=> '$value >= $param',           parent => 'num',   param_name=> 'minimum of $arg', },
- {name=> 'inf',       help=> 'greater then $param',     code=> '$value >  $param',           parent => 'num',   param_name=> 'infimum of $arg', },
- {name=> 'max',       help=> 'less or equal $param',    code=> '$value <= $param',           parent => 'num',   param_name=> 'maximum of $arg'  },
- {name=> 'sup',       help=> 'less then $param',        code=> '$value <  $param',           parent => 'num',   param_name=> 'supremum of $arg' },
- {name=> 'ref',       help=> '$param reference',        code=> 'ref $value eq $param'                           param_name=> '$arg reference' },
+ {name=> 'min',       help=> 'greater or equal then minimum of $param', code=> '$value >= $param',      parent => 'num',   param_name=> 'minimum of $arg', },
+ {name=> 'inf',       help=> 'greater then infimum of $param',          code=> '$value >  $param',      parent => 'num',   param_name=> 'infimum of $arg', },
+ {name=> 'max',       help=> 'less or equal then maximum of $param',    code=> '$value <= $param',      parent => 'num',   param_name=> 'maximum of $arg'  },
+ {name=> 'sup',       help=> 'less then supremum of $param',            code=> '$value <  $param',      parent => 'num',   param_name=> 'supremum of $arg' },
+ {name=> 'ref',       help=> 'a $param reference',                      code=> 'ref $value eq $param'                      param_name=> '$arg reference' },
 );
 
 our @argument = (
@@ -51,12 +51,23 @@ our @property = (
 our @combinator = (
  {name=> 'OR',        help=> '',           parent=> 'str' ,     },
  {name=> 'IS',        help=> '',           parent=> 'str' ,     },
- {name=> 'ARRAY',     help=> 'ARRAY of typed elements', parent=> ['ref','array'],        property=> {index => 1, element => 1},
-                      code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],  },
- {name=> 'HASH',      help=> 'HASH of typed elements',  parent=> ['ref','hash'],         property=> {key => 1, value => 1},
-                      code=> ['for my $key (keys %value) { my $value = $value{$key};'."\n","}\n"], },
+ {name=> 'PARAM',     help=> '',           parent=> 'str' ,     },
+ {name=> 'ARRAY',     help=> 'ARRAY of typed elements', parent=> 'array',   default_value => '[]',
+                      eq_properties=>['length'],  component_pos=> ['element'], component_check=> {index => 1, element => 1},
+                      check_code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],  },
+ {name=> 'HASH',      help=> 'HASH of typed elements',  parent=> 'hash',    default_value => '{}',
+                      eq_properties=>['length'],  component_pos=> ['key', 'value'],  component_check=> {key => 1, value => 1},
+                      check_code=> ['for my $key (sort keys %value) { my $value = $value{$key};'."\n","}\n"], },
 );
 
 1;
 
-# op types  like: not, lc, uc ?
+__END__
+
+op types  like: not, lc, uc ?
+
+  @~check_code
+  @~eq_properties
+  %component_check  name => pos
+ :@component_pos    name, name
+  ~$default_value

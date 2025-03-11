@@ -11,12 +11,12 @@ say "is $value an integer?";
 say "looks good" unless check( $value, 'number of states');
 
 sub check {
-    my ($value, $name, $params ) = @_;
-    $name //= "";
+    my ($value, $value_name) = @_;
+    $value_name //= "";
 
-    return "$name is not a defined value" unless defined $value;                # basic type: defined
-    return "$name is not any type of number" unless looks_like_number($value);  # basic type: num
-    return "$name is not number without decimals" unless int($value) == $value; # basic type: int
+    return "$value_name is not a defined value" unless defined $value;                # basic type: defined
+    return "$value_name is not any type of number" unless looks_like_number($value);  # basic type: num
+    return "$value_name is not number without decimals" unless int($value) == $value; # basic type: int
 
     return '';
 }

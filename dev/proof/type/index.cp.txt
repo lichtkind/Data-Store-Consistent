@@ -4,5 +4,5 @@ concept.pl      # just on simple inner scope
 basic.pl        # inner workings of simple type on example of int
 parametric.pl   # inner workings of a parametric type on example of min and max
 argument.pl     # inner workings of a argument type on example of spos -> inf 0
-property.pl     #
-combinator.pl   # just on simple inner scope
+property.pl     # inner workings of a argument type on example of sring of length 3
+combinator.pl   # inner workings of a argument type on example of color def

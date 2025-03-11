@@ -13,7 +13,7 @@ $" = ',';
 say "is value: [@$value] a color ?";
 
 say "looks good named" unless check_named( $value, 'color value',
-         {ref => 'ARRAY', length => { min => 3, max => 3 }, ARRAY => {element => { min => 0, max => 255 }}},
+    {ref => 'ARRAY', length => { min => 3, max => 3 }, ARRAY => {element => { min => 0, max => 255 }}},
 );
 
 sub check_named {
@@ -64,49 +64,3 @@ sub check_named {
     }
     return '';
 }
-
-__END__
-sub check_pos {
-    my ($value, $value_name, $param, $property, $subtype) = @_;
-
-
-    {
-        my $param      = shift @$param;
-        my $param_name = shift @$param_names;
-        {
-            my $param = $param->{'ref'};
-            return "$name is not an Array ref!" unless ref $value eq $param;
-        }
-    }
-
-    {
-        my $param = shift @$params;
-        {
-            my $value = @$value;
-            my $param = $param->{'len'};
-            return "$name is not an Array of length $param" unless $value == $param;
-        }
-        for my $index (0 .. $#$value) {
-            {
-                my $value = $index;
-            }
-
-            {
-                my $value = $value->[$index];
-                my $param = $param->{'element'};
-                my $name = "$name element $index";
-                {
-                    my $param = $param->{'min'};
-                    return "$name is not greater equal than $param" unless $value >= $param;
-                }
-                {
-                    my $param = $param->{'max'};
-                    return "$name is not smaller equal than $param" unless $value <= $param;
-                }
-            }
-        }
-    }
-    return '';
-}
-
-__END__

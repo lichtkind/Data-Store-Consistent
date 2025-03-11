@@ -3,4 +3,6 @@
 concept.pl      # just on simple inner scope
 basic.pl        # inner workings of simple type on example of int
 parametric.pl   # just on simple inner scope
-compound.pl     # just on simple inner scope
+argument.pl     #
+property.pl     #
+combinator.pl   # just on simple inner scope

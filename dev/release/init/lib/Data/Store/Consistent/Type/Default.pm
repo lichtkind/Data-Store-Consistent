@@ -28,7 +28,7 @@ our @parametric = (
  {name=> 'inf',       help=> 'greater then $param',     code=> '$value >  $param',           parent => 'num',   param_name=> 'infimum of $arg', },
  {name=> 'max',       help=> 'less or equal $param',    code=> '$value <= $param',           parent => 'num',   param_name=> 'maximum of $arg'  },
  {name=> 'sup',       help=> 'less then $param',        code=> '$value <  $param',           parent => 'num',   param_name=> 'supremum of $arg' },
- {name=> 'ref',       help=> 'ref type $param',         code=> 'ref $value eq $param'                           param_name=> '$arg reference' },
+ {name=> 'ref',       help=> '$param reference',        code=> 'ref $value eq $param'                           param_name=> '$arg reference' },
 );
 
 our @argument = (
@@ -44,12 +44,13 @@ our @property = (
  {name=> 'length',    help=> 'an string with length of $param',  code=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
  {name=> 'length',    help=> 'number of ARRAY elements',         code=> '@$value',        parent=> 'array',   type=> 'int' },
  {name=> 'length',    help=> 'number of HASH keys',              code=> 'keys(%$value)',  parent=> 'hash' ,   type=> 'int' },
+ {name=> 'in_set',    help=> 'is part of list',                                           parent=> 'ne_str',  type=> 'bool',
+                                                                 code=> 'reduce {$a || $b eq $var} 0, @$param', },
 );
 
 our @combinator = (
  {name=> 'OR',        help=> '',           parent=> 'str' ,     },
- {name=> 'IN_SET',    help=> 'value is part of SET',    parent=> 'ne_str', type_name=> 'bool',
-                      code=> ['for my $index (0 .. $#param) { my $param = $value[$index];','}'], },
+ {name=> 'IS',        help=> '',           parent=> 'str' ,     },
  {name=> 'ARRAY',     help=> 'ARRAY of typed elements', parent=> ['ref','array'],        property=> {index => 1, element => 1},
                       code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],  },
  {name=> 'HASH',      help=> 'HASH of typed elements',  parent=> ['ref','hash'],         property=> {key => 1, value => 1},

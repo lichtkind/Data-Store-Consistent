@@ -142,7 +142,7 @@ property: +
   ~parent
 
 combinator: +
-  ~name
+  ~name ... of the combination (UC !)
   ~help ?
   ~parent
   @~check_code

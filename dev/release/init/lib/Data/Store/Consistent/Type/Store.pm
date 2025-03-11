@@ -31,6 +31,9 @@ sub add_type {
 ########################################################################
 sub get_type {
     my ($name) = @_;
+    return unless exists $type{ 'all' }{ $name };
+    my $kind = $type{ 'all' }{ $name };
+
     if (ref $name eq 'ARRAY') {
     } elsif (not ref $name){
     }

@@ -10,6 +10,7 @@ use Data::Store::Consistent::Type::Default;
 my %type = (all => {}, parametric => {}, argument => {}, combinator => {},
             property_by_parent => {}, property_parents => {}, );
 
+
 ########################################################################
 sub add_type {
     my ($type) = @_;
@@ -28,7 +29,14 @@ sub add_type {
     }
 }
 
+sub remove_type {
+    my ($name) = @_;
+}
+
 ########################################################################
+sub has_type      { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
+sub get_type_kind { (exists $_[0]->{ $_[1] }) ? 1 : 0 }
+
 sub get_type {
     my ($name) = @_;
     return unless exists $type{ 'all' }{ $name };
@@ -45,15 +53,13 @@ sub get_type_checker {
     } elsif (not ref $name){
     }
 }
+
 sub get_eq_checker {
     my ($name) = @_;
     if (ref $name eq 'ARRAY') {
     } elsif (not ref $name){
     }
 }
-
-
-
 
 ########################################################################
 
@@ -70,4 +76,3 @@ sub get_type_property {
     return $self->{ $name }{'default_value'} if $property eq 'default_value';
     return "unknown type property: $property, try type_chacker, help or default_value";
 }
-sub has_type { (exists $_[0]->{ $_[1] }) ? 1 : 0 }

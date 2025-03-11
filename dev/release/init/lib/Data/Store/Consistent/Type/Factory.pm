@@ -4,11 +4,13 @@
 package Data::Store::Consistent::Type::Factory;
 use v5.12;
 use warnings;
-use Scalar::Util qw/blessed looks_like_number/;
+use Scalar::Util qw/looks_like_number blessed/;
 use List::Util qw/reduce sum0/;
 use Data::Store::Consistent::Type::Store;
 
+# load the defaults
 
+########################################################################
 sub assemble_from_definition {
     my ($def) = @_;
     my $set = {};

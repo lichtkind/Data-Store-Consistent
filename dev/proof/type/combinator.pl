@@ -10,13 +10,14 @@ my $value = [12,13,14];
 say "$value: 0 .. ", $#$value;
 
 say "looks good" unless check( $value, 'color value',
-         [{ref => 'ARRAY'}, {len => 3, element => {min => 0, max => 255}}]);
+         [{ref => 'ARRAY'}, {len => 3, element => {min => 0, max => 255}}], ['ref type ']);
 
 sub check {
-    my ($value, $name, $params ) = @_;
+    my ($value, $name, $params, $param_names ) = @_;
 
     {
-        my $param = shift @$params;
+        my $param      = shift @$params;
+        my $param_name = shift @$param_names;
         {
             my $param = $param->{'ref'};
             return "$name is not an Array ref!" unless ref $value eq $param;

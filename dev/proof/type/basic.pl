@@ -1,5 +1,8 @@
 
 # basic type mechanics on example of int
+#
+# int is parent of num is parent of defined
+# defined --> num --> int
 
 use v5.12;
 use warnings;

@@ -1,5 +1,8 @@
 
 # parametric type mechanics on example of min and max
+#
+# int[min(0); max(255);]
+# int{0,255}
 
 use v5.12;
 use warnings;
@@ -12,28 +15,27 @@ say "looks good named" unless check_named( $value, 'color value', {min => 0, max
 say "looks good pos" unless check_pos( $value, 'color value', [0, 255] );
 
 sub check_named {
-    my ($value, $value_name, $params) = @_;
+    my ($value, $value_name, $param) = @_;
     $value_name //= "";
 
     return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
     return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
     return "$value_name is not number without decimals" unless int($value) == $value;  # basic type: int
+
     {
-        {
-            my $param = $params->{'min'};
-            return "$value_name is not greater or equal $param" unless $value >= $param;
-        }
-        {
-            my $param = $params->{'max'};
-            return "$value_name is not less or equal $param" unless $value <= $param;
-        }
+        my $param = $param->{'min'};
+        return "$value_name is not greater or equal $param" unless $value >= $param;
+    }
+    {
+        my $param = $param->{'max'};
+        return "$value_name is not less or equal $param" unless $value <= $param;
     }
 
     return '';
 }
 
 sub check_pos {
-    my ($value, $value_name, $params) = @_;
+    my ($value, $value_name, $param) = @_;
     $value_name //= "";
 
     return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
@@ -41,11 +43,11 @@ sub check_pos {
     return "$value_name is not number without decimals" unless int($value) == $value;  # basic type: int
 
     {
-        my $param = shift @$params;
+        my $param = shift @$param;
         return "$value_name is not greater or equal $param" unless $value >= $param;
     }
     {
-        my $param = shift @$params;
+        my $param = shift @$param;
         return "$value_name is not less or equal $param" unless $value <= $param;
     }
 

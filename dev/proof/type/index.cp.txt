@@ -2,7 +2,7 @@
 
 concept.pl      # just on simple inner scope
 basic.pl        # inner workings of simple type on example of int
-parametric.pl   # just on simple inner scope
-argument.pl     #
+parametric.pl   # inner workings of a parametric type on example of min and max
+argument.pl     # inner workings of a argument type on example of spos -> inf 0
 property.pl     #
 combinator.pl   # just on simple inner scope

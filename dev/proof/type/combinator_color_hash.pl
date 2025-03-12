@@ -1,8 +1,8 @@
 
 # create var in sub scope while using outer var that just gets overwritten
 #
-# ARRAY( length[min(3), max(3)] )< int: min(0), max(255) >
-# @{3}<int{0,255}>
+# HASH<set:red,green,blue>< int: min(0), max(255) >
+# %<red|green|blue><int{0,255}>
 
 use v5.12;
 use warnings;

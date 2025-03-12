@@ -64,3 +64,28 @@ sub check_named {
     }
     return '';
 }
+
+sub not_equal {
+    my ($value_a, $value_b, $value_name) = @_;
+    $value_name //= "";
+
+
+    {
+        my $value_name = "$property of $value_name "; # how get ARRAY at end of this ?
+        my $value_a = @$value_a;
+        my $value_b = @$value_b;
+
+        return "$value_name of $value_a is not equal to " unless $value_a == $value_b;
+    }
+    {
+        for my $index (0 .. $#$value) {
+            my $value_a = $value_a->[$index];
+            my $value_b = $value_b->[$index];
+            my $value_name = "$value_name element $index";
+
+            return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
+        }
+    }
+
+    return '';
+}

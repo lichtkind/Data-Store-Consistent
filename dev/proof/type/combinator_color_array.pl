@@ -14,8 +14,10 @@ $" = ',';
 say "is value: [@$value] a color ?";
 
 say "looks good named" unless check_named( $value, 'color value',
-    {ref => 'ARRAY', length => { min => 3, max => 3 }, ARRAY => {element => { min => 0, max => 255 }}},
+    {ref => 'ARRAY', length => { id => 3 }, ARRAY => {element => { min => 0, max => 255 }}},
 );
+say "got equal check !" unless not_equal( $value, [12,13,14], 'color value' );
+
 
 sub check_named {
     my ($value, $value_name, $param) = @_;
@@ -34,23 +36,11 @@ sub check_named {
         my $param = $param->{$property};
         my $value_name = "$property of $value_name "; # how get ARRAY at end of this ?
         my $value = @$value;
+
         {
-            my $param = $param->{'min'};
-            {
-                my $value = $param;
-                return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
-                return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
-            }
-            return "$value_name is not greater or equal $param" unless $value >= $param;
-        }
-        {
-            my $param = $param->{'max'};
-            {
-                my $value = $param;
-                return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
-                return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
-            }
-            return "$value_name is not less or equal $param" unless $value <= $param;
+            my $value_a = $value;
+            my $value_b = $param->{'id'};
+            return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
         }
     }
     {
@@ -90,3 +80,33 @@ sub check_named {
     }
     return '';
 }
+
+sub not_equal {
+    my ($value_a, $value_b, $value_name) = @_;
+    $value_name //= "";
+
+
+    {
+        my $property = 'length';
+        my $value_name = "$property of $value_name "; # how get ARRAY at end of this ?
+        my $value_a = @$value_a;
+        my $value_b = @$value_b;
+
+        return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
+    }
+    {
+        for my $index (0 .. $#$value) {
+            my $value_a = $value_a->[$index];
+            my $value_b = $value_b->[$index];
+            my $value_name = "$value_name element $index";
+
+            return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
+        }
+    }
+
+    return '';
+}
+
+
+
+

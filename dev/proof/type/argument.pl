@@ -37,6 +37,6 @@ sub not_equal {
     my ($value_a, $value_b, $value_name, $param) = @_;
     $value_name //= "";
 
-    return "$value_name of $value_a is not equal to " unless $value_a == $value_b;
+    return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
     return '';
 }

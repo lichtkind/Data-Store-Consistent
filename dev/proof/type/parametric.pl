@@ -1,5 +1,6 @@
 
 # parametric type mechanics on example of min and max
+# unless argument types, parameter types have to be checked at run time every time
 #
 # int[min(0); max(255);]
 # int{0,255}
@@ -49,6 +50,6 @@ sub not_equal {
     my ($value_a, $value_b, $value_name, $param) = @_;
     $value_name //= "";
 
-    return "$value_name of $value_a is not equal to " unless $value_a == $value_b;
+    return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
     return '';
 }

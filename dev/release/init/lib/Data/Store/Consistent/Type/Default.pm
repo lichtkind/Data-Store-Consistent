@@ -16,10 +16,7 @@ our @basic = (
  {name=> 'str',       help=> 'string of characters',                                         parent=> 'not_ref',               },
  {name=> 'char',      help=> 'one character',           code=> 'length($value) == 1',        parent=> 'str',     default=> 'a' },
  {name=> 'ne_str',    help=> 'none empty string',       code=> '$value',                     parent=> 'not_ref', default=> ' ' },
- {name=> 'lc_str',    help=> 'lower case string',       code=> 'lc $value eq $value',        parent=> 'ne_str',  default=> 'a' },
- {name=> 'uc_str',    help=> 'upper case string',       code=> 'uc $value eq $value',        parent=> 'ne_str',  default=> 'A' },
  {name=> 'word',      help=> 'only word character',     code=> '$value =~ /^\w+$/',          parent=> 'ne_str',  default=> 'A' },
- {name=> 'lc_word',   help=> 'lower case word',         code=> 'lc $value eq $value',        parent=> 'word',    default=> 'a' },
  {name=> 'identifier',help=> 'begins with a letter',    code=> '$value =~ /^[a-z_]/',        parent=> 'lc_word',               },
 );
 
@@ -49,6 +46,7 @@ our @property = (
  {name=> 'length',    help=> 'number of HASH keys',              code=> 'keys(%$value)',  parent=> 'hash' ,   type=> 'int' },
  {name=> 'lc',        help=> 'lower case string',                code=> 'lc $value'       parent=> 'ne_str',  type=> '',   },
  {name=> 'uc',        help=> 'upper case string',                code=> 'uc $value'       parent=> 'ne_str',  type=> '',   },
+ {name=> 'mod',       help=> 'modulo $param',                    code=> '$value % $param' parent=> 'num',     type=> '',   },
 );
 
 our @combinator = (

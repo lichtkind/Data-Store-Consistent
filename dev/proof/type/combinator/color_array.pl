@@ -4,7 +4,6 @@
 # ARRAY[length(min(3), max(3))]< int: min(0), max(255) >
 # @{3}<int{0,255}>
 
-
 use v5.12;
 use warnings;
 use Scalar::Util qw/looks_like_number/;

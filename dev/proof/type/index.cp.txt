@@ -1,8 +1,12 @@
 
 
-concept.pl      # just on simple inner scope
-basic.pl        # inner workings of simple type on example of int
-parametric.pl   # inner workings of a parametric type on example of min and max
-argument.pl     # inner workings of a argument type on example of spos -> inf 0
-property.pl     # inner workings of a argument type on example of sring of length 3
-combinator.pl   # inner workings of a argument type on example of color def
+# proof prototypes for inner mechanics of all kinds of types
+
+concept.pl            # just on simple inner scope
+basic.pl              # simple type on example of int
+parametric.pl         # parametric type on example of min and max
+argument.pl           # argument type on example of spos -> inf 0
+property.pl           # type property = value  on example of sring of length 3
+/combinator/          # inner workings of a most complex types
+   color_array.pl      # @{3}<int{0,255}>
+   color_hash.pl       # %<red|green|blue><int{0,255}>

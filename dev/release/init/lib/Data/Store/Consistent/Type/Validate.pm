@@ -22,7 +22,7 @@ sub definition {
 sub get_kind {
     my ($def) = @_;
     return unless ref $def eq 'HASH';
-    my $kind = (exists $def->{'param_name'})    ? 'parametric' :
+    my $kind = (exists $def->{'param_type'})    ? 'parametric' :
                (exists $def->{'value'})         ? 'argument'   :
                (exists $def->{'type'})          ? 'property'   :
                (exists $def->{'component_pos'}) ? 'combinator' : 'basic';
@@ -126,8 +126,8 @@ basic
    eq_ref
 
 parametric: +
-  :param_name
-   param_type
+   param_name ??
+  :param_type
 
 argument: +
   ~name
@@ -145,8 +145,9 @@ combinator: +
   ~name ... of the combination (UC !)
   ~help ?
   ~parent
+  ~@$default_value
   @~check_code
+ :@component_pos    name, name
+
   @~eq_properties
   %component_check  name => pos
- :@component_pos    name, name
-  ~$default_value

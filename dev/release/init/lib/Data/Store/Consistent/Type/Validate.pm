@@ -126,13 +126,16 @@ basic
    eq_ref
 
 parametric: +
-   param_name ??
   :param_type
+   ==
+   source
+   check_ref
+   eq_ref
 
 argument: +
   ~name
   ~parent
- :$value
+ :~$value (eval)
 
 property: +
   ~name

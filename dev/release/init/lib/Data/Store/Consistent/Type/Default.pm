@@ -7,27 +7,27 @@ use warnings;
 use utf8;
 
 our @basic = (
- {name=> 'any',       help=> 'any value',               code=> '1',                                              default=> '', equality=> '$value_a eq $value_b', },
- {name=> 'defined',   help=> 'a defined value',         code=> 'defined $value',                                 default=> '', equality=> '$value_a eq $value_b', },
- {name=> 'not_ref',   help=> 'not a reference',         code=> 'not ref $value',             parent=> 'defined',               },
- {name=> 'bool',      help=> '0 or 1',                  code=> '$value eq 0 or $value eq 1', parent=> 'not_ref', default=> 0,  },
- {name=> 'num',       help=> 'any type of number',      code=> 'looks_like_number($value)',  parent=> 'not_ref', default=> 0,  equality=> '$value_a == $value_b', },
- {name=> 'int',       help=> 'number without decimals', code=> 'int($value) == $value',      parent=> 'num',     default=> 0,  },
- {name=> 'str',       help=> 'string of characters',                                         parent=> 'not_ref',               },
- {name=> 'char',      help=> 'one character',           code=> 'length($value) == 1',        parent=> 'str',     default=> 'a' },
- {name=> 'ne_str',    help=> 'none empty string',       code=> '$value',                     parent=> 'not_ref', default=> ' ' },
- {name=> 'word',      help=> 'only word character',     code=> '$value =~ /^\w+$/',          parent=> 'ne_str',  default=> 'A' },
- {name=> 'identifier',help=> 'begins with a letter',    code=> '$value =~ /^[a-z_]/',        parent=> 'lc_word',               },
+ {name=> 'any',       help=> 'any value',               condition=> '1',                                              default_value=> '', equality=> '$value_a eq $value_b', },
+ {name=> 'defined',   help=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value_a eq $value_b', },
+ {name=> 'not_ref',   help=> 'not a reference',         condition=> 'not ref $value',             parent=> 'defined',               },
+ {name=> 'bool',      help=> '0 or 1',                  condition=> '$value eq 0 or $value eq 1', parent=> 'not_ref', default_value=> 0,  equality=> '$value_a == $value_b', },
+ {name=> 'num',       help=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> 0,  equality=> '$value_a == $value_b', },
+ {name=> 'int',       help=> 'number without decimals', condition=> 'int($value) == $value',      parent=> 'num',                   },
+ {name=> 'str',       help=> 'string of characters',                                              parent=> 'not_ref',               },
+ {name=> 'char',      help=> 'one character',           condition=> 'length($value) == 1',        parent=> 'str',     default_value=> 'a' },
+ {name=> 'ne_str',    help=> 'none empty string',       condition=> '$value',                     parent=> 'not_ref', default_value=> ' ' },
+ {name=> 'word',      help=> 'only word character',     condition=> '$value =~ /^\w+$/',          parent=> 'ne_str',  default_value=> 'A' },
+ {name=> 'identifier',help=> 'begins with a letter',    condition=> '$value =~ /^[a-z_]/',        parent=> 'lc_word',               },
 );
 
 our @parametric = (
- {name=> 'min',       help=> 'greater or equal then minimum of $param', code=> '$value >= $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'inf',       help=> 'greater then infimum of $param',          code=> '$value >  $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'max',       help=> 'less or equal then maximum of $param',    code=> '$value <= $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'sup',       help=> 'less then supremum of $param',            code=> '$value <  $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'ref',       help=> 'a $param reference',                      code=> 'ref $value eq $param',                    param_type=> 'str', },
- {name=> 'enum',      help=> 'part of list @$param',      code=> 'reduce {$a || ($b eq $value)} 0, @$param', parent => 'str',  param_type=> ['ARRAY','str'],},
- {name=> 'enum',      help=> 'part of list @$param',      code=> 'reduce {$a || ($b == $value)} 0, @$param', parent => 'num',  param_type=> ['ARRAY','num'],},
+ {name=> 'min',       help=> 'greater or equal then minimum of $param', condition=> '$value >= $param',      parent => 'num',  param_type=> 'num', },
+ {name=> 'inf',       help=> 'greater then infimum of $param',          condition=> '$value >  $param',      parent => 'num',  param_type=> 'num', },
+ {name=> 'max',       help=> 'less or equal then maximum of $param',    condition=> '$value <= $param',      parent => 'num',  param_type=> 'num', },
+ {name=> 'sup',       help=> 'less then supremum of $param',            condition=> '$value <  $param',      parent => 'num',  param_type=> 'num', },
+ {name=> 'ref',       help=> 'a $param reference',                      condition=> 'ref $value eq $param',                    param_type=> 'str', },
+ {name=> 'enum',      help=> 'part of list @$param',      condition=> 'reduce {$a || ($b eq $value)} 0, @$param', parent => 'str',  param_type=> ['ARRAY','str'],},
+ {name=> 'enum',      help=> 'part of list @$param',      condition=> 'reduce {$a || ($b == $value)} 0, @$param', parent => 'num',  param_type=> ['ARRAY','num'],},
 
 );
 
@@ -40,13 +40,13 @@ our @argument = (
 );
 
 our @property = (
- {name=> 'length',    help=> '',                                 code=> '$value',         parent=> 'num'  ,   type=> '' },
- {name=> 'length',    help=> 'an string with length of $param',  code=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
- {name=> 'length',    help=> 'number of ARRAY elements',         code=> '@$value',        parent=> 'array',   type=> 'int' },
- {name=> 'length',    help=> 'number of HASH keys',              code=> 'keys(%$value)',  parent=> 'hash' ,   type=> 'int' },
- {name=> 'lc',        help=> 'lower case string',                code=> 'lc $value',      parent=> 'ne_str',  type=> '',   },
- {name=> 'uc',        help=> 'upper case string',                code=> 'uc $value',      parent=> 'ne_str',  type=> '',   },
- {name=> 'mod',       help=> 'modulo $param',                    code=> '$value % $param',parent=> 'num',     type=> '',   },
+ {name=> 'length',    help=> '',                                 calculation=> '$value',         parent=> 'num'  ,   type=> '' },
+ {name=> 'length',    help=> 'an string with length of $param',  calculation=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
+ {name=> 'length',    help=> 'number of ARRAY elements',         calculation=> '@$value',        parent=> 'array',   type=> 'int' },
+ {name=> 'length',    help=> 'number of HASH keys',              calculation=> 'keys(%$value)',  parent=> 'hash' ,   type=> 'int' },
+ {name=> 'lc',        help=> 'lower case string',                calculation=> 'lc $value',      parent=> 'ne_str',  type=> '',   },
+ {name=> 'uc',        help=> 'upper case string',                calculation=> 'uc $value',      parent=> 'ne_str',  type=> '',   },
+ {name=> 'mod',       help=> 'modulo $param',                    calculation=> '$value % $param',parent=> 'num',     type=> '',   },
 );
 
 our @combinator = (

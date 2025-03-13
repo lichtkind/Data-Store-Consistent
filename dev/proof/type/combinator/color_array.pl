@@ -82,8 +82,6 @@ sub check_named {
 sub not_equal {
     my ($value_a, $value_b, $value_name) = @_;
     $value_name //= "";
-
-
     {
         my $property = 'length';
         my $value_name = "$property of $value_name "; # how get ARRAY at end of this ?
@@ -101,7 +99,6 @@ sub not_equal {
             return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
         }
     }
-
     return '';
 }
 

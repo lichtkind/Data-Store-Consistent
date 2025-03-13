@@ -19,12 +19,12 @@ say "not equal to 32.1 !"    if not_equal( $value, 32.1, 'natural number' );
 
 sub check_named {
     my ($value, $value_name, $param) = @_;
-    $value_name //= "";
+    $value_name //= "value";
 
-    return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
-    return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
-    return "$value_name is not number without decimals" unless int($value) == $value;  # basic type: int
-
+    return "$value_name should be a defined value" unless defined $value;                # basic type: defined
+    return "$value_name should be not a reference" unless not ref $value;                # basic type: not_ref
+    return "$value_name should be any type of number" unless looks_like_number($value);  # basic type: num
+    return "$value_name should be number without decimals" unless int($value) == $value; # basic type: int
     {
         my $param = $param->{'inf'};
         return "$value_name is not greater then $param" unless $value > $param;
@@ -35,7 +35,7 @@ sub check_named {
 
 sub not_equal {
     my ($value_a, $value_b, $value_name, $param) = @_;
-    $value_name //= "";
+    $value_name //= "value";
 
     return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
     return '';

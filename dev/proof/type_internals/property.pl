@@ -18,7 +18,7 @@ say "not equal to '010' !" if not_equal( $value, '010', 'color value' );
 
 sub check_named {
     my ($value, $value_name, $param) = @_;
-    $value_name //= "";
+    $value_name //= "value";
 
     return "$value_name is not a defined value" unless defined $value;  # basic type defined
     return "$value_name is not not a reference" unless not ref $value;  # basic type not_ref = str
@@ -41,7 +41,7 @@ sub check_named {
 
 sub not_equal {
     my ($value_a, $value_b, $value_name, $param) = @_;
-    $value_name //= "";
+    $value_name //= "value";
 
     return "$value_name of $value_a is not equal to $value_b" unless $value_a eq $value_b;
     return '';

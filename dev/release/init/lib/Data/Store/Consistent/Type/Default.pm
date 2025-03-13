@@ -26,8 +26,8 @@ our @parametric = (
  {name=> 'max',       help=> 'less or equal then maximum of $param',    code=> '$value <= $param',      parent => 'num',  param_type=> 'num', },
  {name=> 'sup',       help=> 'less then supremum of $param',            code=> '$value <  $param',      parent => 'num',  param_type=> 'num', },
  {name=> 'ref',       help=> 'a $param reference',                      code=> 'ref $value eq $param',                    param_type=> 'str', },
- {name=> 'enum',      help=> 'is part of list',      code=> 'reduce {$a || ($b eq $value)} 0, @$param', parent => 'str',  param_type=> ['ARRAY','str'],},
- {name=> 'enum',      help=> 'is part of list',      code=> 'reduce {$a || ($b == $value)} 0, @$param', parent => 'num',  param_type=> ['ARRAY','num'],},
+ {name=> 'enum',      help=> 'part of list @$param',      code=> 'reduce {$a || ($b eq $value)} 0, @$param', parent => 'str',  param_type=> ['ARRAY','str'],},
+ {name=> 'enum',      help=> 'part of list @$param',      code=> 'reduce {$a || ($b == $value)} 0, @$param', parent => 'num',  param_type=> ['ARRAY','num'],},
 
 );
 
@@ -44,9 +44,9 @@ our @property = (
  {name=> 'length',    help=> 'an string with length of $param',  code=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
  {name=> 'length',    help=> 'number of ARRAY elements',         code=> '@$value',        parent=> 'array',   type=> 'int' },
  {name=> 'length',    help=> 'number of HASH keys',              code=> 'keys(%$value)',  parent=> 'hash' ,   type=> 'int' },
- {name=> 'lc',        help=> 'lower case string',                code=> 'lc $value'       parent=> 'ne_str',  type=> '',   },
- {name=> 'uc',        help=> 'upper case string',                code=> 'uc $value'       parent=> 'ne_str',  type=> '',   },
- {name=> 'mod',       help=> 'modulo $param',                    code=> '$value % $param' parent=> 'num',     type=> '',   },
+ {name=> 'lc',        help=> 'lower case string',                code=> 'lc $value',      parent=> 'ne_str',  type=> '',   },
+ {name=> 'uc',        help=> 'upper case string',                code=> 'uc $value',      parent=> 'ne_str',  type=> '',   },
+ {name=> 'mod',       help=> 'modulo $param',                    code=> '$value % $param',parent=> 'num',     type=> '',   },
 );
 
 our @combinator = (
@@ -55,10 +55,19 @@ our @combinator = (
  {name=> 'PARAM',     help=> '',           parent=> 'str' ,     },
  {name=> 'ARRAY',     help=> 'ARRAY of typed elements', parent=> 'array',   default_value => ['[',']'],
                       eq_properties=>['length'],  component_pos=> ['element'], component_check=> {index => 1, element => 1},
-                      check_code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],  },
+                      check_code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],
+                      eq_code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],  },
  {name=> 'HASH',      help=> 'HASH of typed elements',  parent=> 'hash',    default_value => ['{','}'],
                       eq_properties=>['length'],  component_pos=> ['key', 'value'],  component_check=> {key => 1, value => 1},
-                      check_code=> ['for my $key (sort keys %value) { my $value = $value{$key};'."\n","}\n"], },
+                      check_code=> ['for my $key (sort keys %$value) { my $value = $value->{$key};'."\n","}\n"],
+                      eq_code=> ['for my $key (sort keys %$value_a) { '."\n".
+                                 'my $value_a = $value_a->{$key};'."\n".
+                                 'my $value_name = "$value_name element $index";'."\n".
+                                 '{my $value_name = "$value_name key $key";'."\n".
+                                 'return "$value_name does not exist in both HASHES" unless exists $value_b->{$key};'."\n".
+                                 '}'."\n".'my $value_b = $value_b->{$key};'."\n"
+                                 ,"}\n"],
+                      },
 );
 
 1;

@@ -9,4 +9,5 @@ argument.pl           # argument type on example of spos -> inf 0
 property.pl           # type property = value  on example of sring of length 3
 /combinator/          # inner workings of a most complex types
    color_array.pl      # @{3}<int{0,255}>
+   color_AoA.pl        # @{1,9}<@{3}<int{0,255}>>
    color_hash.pl       # %<red|green|blue><int{0,255}>

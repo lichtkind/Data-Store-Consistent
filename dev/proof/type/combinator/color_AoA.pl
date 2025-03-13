@@ -1,7 +1,7 @@
 
 # create var in sub scope while using outer var that just gets overwritten
 #
-# ARRAY[length(min(3), max(3))]< int: min(0), max(255) >
+# ARRAY[length(3)]< int: min(0), max(255) >
 # @{3}<int{0,255}>
 
 use v5.12;
@@ -9,12 +9,13 @@ use warnings;
 use Scalar::Util qw/looks_like_number/;
 
 my $value = [12,13,14];
-say "is value: [12,13,14] a color ?";
+$" = ',';
+say "is value: [@$value] a color ?";
 
-say "looks good named" unless check_named( $value, 'color array',
+say "looks good named" unless check_named( $value, 'color value',
     {ref => 'ARRAY', length => { is => 3 }, ARRAY => {element => { min => 0, max => 255 }}},
 );
-say "got equal check !" unless not_equal( $value, [12,13,14], 'color array' );
+say "got equal check !" unless not_equal( $value, [12,13,14], 'color value' );
 
 
 sub check_named {

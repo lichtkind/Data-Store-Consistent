@@ -21,13 +21,13 @@ our @basic = (
 );
 
 our @parametric = (
- {name=> 'min',       help=> 'greater or equal then minimum of $param', condition=> '$value >= $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'inf',       help=> 'greater then infimum of $param',          condition=> '$value >  $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'max',       help=> 'less or equal then maximum of $param',    condition=> '$value <= $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'sup',       help=> 'less then supremum of $param',            condition=> '$value <  $param',      parent => 'num',  param_type=> 'num', },
- {name=> 'ref',       help=> 'a $param reference',                      condition=> 'ref $value eq $param',                    param_type=> 'str', },
- {name=> 'enum',      help=> 'part of list @$param',      condition=> 'reduce {$a || ($b eq $value)} 0, @$param', parent => 'str',  param_type=> ['ARRAY','str'],},
- {name=> 'enum',      help=> 'part of list @$param',      condition=> 'reduce {$a || ($b == $value)} 0, @$param', parent => 'num',  param_type=> ['ARRAY','num'],},
+ {name=> 'min',       help=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter',      parent => 'num',  parameter_type=> 'num', },
+ {name=> 'inf',       help=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter',      parent => 'num',  parameter_type=> 'num', },
+ {name=> 'max',       help=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter',      parent => 'num',  parameter_type=> 'num', },
+ {name=> 'sup',       help=> 'less then supremum of $parameter',            condition=> '$value <  $parameter',      parent => 'num',  parameter_type=> 'num', },
+ {name=> 'ref',       help=> 'a $parameter reference',                      condition=> 'ref $value eq $parameter',                    parameter_type=> 'str', },
+ {name=> 'enum',      help=> 'part of list @$parameter',                    condition=> 'reduce {$a || ($b eq $value)} 0, @$parameter', parent => 'str',  parameter_type=> ['ARRAY','str'],},
+ {name=> 'enum',      help=> 'part of list @$parameter',                    condition=> 'reduce {$a || ($b == $value)} 0, @$parameter', parent => 'num',  parameter_type=> ['ARRAY','num'],},
 
 );
 

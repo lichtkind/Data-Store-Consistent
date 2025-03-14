@@ -20,28 +20,28 @@ sub check_named {
     my ($value, $value_name, $param) = @_;
     $value_name //= "value";
 
-    return "$value_name should be a defined value" unless defined $value;                # basic type: defined
-    return "$value_name should be not a reference" unless not ref $value;                # basic type: not_ref
-    return "$value_name should be any type of number" unless looks_like_number($value);  # basic type: num
-    return "$value_name should be number without decimals" unless int($value) == $value; # basic type: int
+    return "$value_name should be a defined value" unless defined $value;                          # basic type: defined
+    return "$value_name of $value should be not a reference" unless not ref $value;                # basic type: not_ref
+    return "$value_name of $value should be any type of number" unless looks_like_number($value);  # basic type: num
+    return "$value_name of $value should be number without decimals" unless int($value) == $value; # basic type: int
 
     {
         my $param = $param->{'min'};
         {
             my $value = $param;
-            return "$value_name should be a defined value" unless defined $value;                 # basic type: defined
-            return "$value_name should be any type of number" unless looks_like_number($value);   # basic type: num
+            return "$value_name should be a defined value" unless defined $value;                         # basic type: defined
+            return "$value_name of $value should be any type of number" unless looks_like_number($value); # basic type: num
         }
-        return "$value_name is not greater or equal $param" unless $value >= $param;
+        return "$value_name of $value should be greater or equal $param" unless $value >= $param;
     }
     {
         my $param = $param->{'max'};
         {
             my $value = $param;
-            return "$value_name should be a defined value" unless defined $value;                 # basic type: defined
-            return "$value_name should be any type of number" unless looks_like_number($value);   # basic type: num
+            return "$value_name should be a defined value" unless defined $value;                         # basic type: defined
+            return "$value_name of $value should be any type of number" unless looks_like_number($value); # basic type: num
         }
-        return "$value_name is not less or equal $param" unless $value <= $param;
+        return "$value_name of $value should be less or equal $param" unless $value <= $param;
     }
 
     return '';
@@ -50,7 +50,6 @@ sub check_named {
 sub not_equal {
     my ($value_a, $value_b, $value_name, $param) = @_;
     $value_name //= "value";
-
     return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
     return '';
 }

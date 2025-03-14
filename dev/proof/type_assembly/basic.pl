@@ -18,45 +18,56 @@ my @type_def = (
 );
 
 my $type_store = {};
-map { my $T = assemble($_); $type_store->{ $T->{'name'} } = $T } @type_def;
+map { my $T = assemble_basic($_); $type_store->{ $T->{'name'} } = $T } @type_def;
 
-sub assemble {
+sub assemble_basic {
     my $type_def = shift;
     return unless ref $type_def eq 'HASH';
     my $type = {%$type_def};
-    say $type->{'name'};
+    my $parent = (exists $type->{'parent'}) ? $type_store->{ $type->{'parent'} } : undef;
+    $type->{'parent'} = (defined $parent) ? [@{$parent->{'parent'}}, $type->{'parent'}]
+                                          : [];
 
-    $type->{'check_source'} = (exists $type->{'condition'})
-                            ? ['return "$value_name should be '.$type->{'help'}.'" unless '.$type->{'condition'}.";\n" ]
-                            : [];
-    $type->{'check_source'} = [@{$type_store->{ $type->{'parent'} }{'check_source'}}, @{$type->{'check_source'}} ] if exists $type->{'parent'};
+  say $type->{'name'};
 
-    my $check_args_code = 'my ($value, $value_name, $parameter) = @_;'."\n";
-    my $default_name = '$value_name //= "value";'."\n";
-    my $return_code = "return ''; \n";
-    my @lines = ($check_args_code, $default_name, @{$type->{'check_source'}}, $return_code);
-    @lines = map {'  '.$_} @lines;
-    my $check_code = wrap_code_in_anon_sub( join '', @lines );
-    say $check_code;
-    $type->{'checker_ref'} = eval $check_code;
+    my $checker_source_start = (exists $type->{'parent'}[0] and $type->{'parent'}[0] eq 'defined') ? 'of $value ' : '';
+    $checker_source_start = 'return "$value_name '.$checker_source_start.'should be ';
+    $type->{'checker_source'} = [];
+    push @{$type->{'checker_source'}}, @{$parent->{'checker_source'}} if defined $parent;
+    push @{$type->{'checker_source'}}, $checker_source_start . $type->{'help'}.'" unless '.$type->{'condition'}.";"
+        if exists $type->{'condition'} and exists $type->{'help'};
+
+    my $checker_args_source = 'my ($value, $value_name) = @_;';
+    my $default_name_source = '$value_name //= "value";';
+    my $return_source = "return '';";
+    my @lines = ($checker_args_source, $default_name_source, @{$type->{'checker_source'}}, $return_source);
+    @lines = map { '  '.$_."\n" } @lines;
+    my $checker_source = wrap_source_in_anon_sub( join '', @lines );
+    $type->{'checker'} = eval $checker_source;
     return if $@;
+
+  say $checker_source;
 
     $type->{'default_value'} = $type_store->{ $type->{'parent'} }{'default_value'} unless exists $type->{'default_value'};
-    say $type->{'checker_ref'}->( $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'} );
+    say $type->{'checker'}->( $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'} );
 
     $type->{'eq_source'} = (exists $type->{'equality'})
-                         ? 'return "$value_name is $value_a, which is not equal to $value_b" unless '.$type->{'equality'}.";\n"
-                         : $type_store->{ $type->{'parent'} }->{'eq_source'} ;
-    my $eq_args_code = 'my ($value_a, $value_b, $value_name) = @_;'."\n";
-    @lines = ($eq_args_code, $default_name, $type->{'eq_source'}, $return_code);
-    @lines = map {'  '.$_} @lines;
-    my $eq_code = wrap_code_in_anon_sub( join '', @lines );
-    $type->{'eq_ref'} = eval $eq_code;
+                       ? 'return "$value_name is $value_a, which is not equal to $value_b" unless '.$type->{'equality'}.";"
+                       : (defined $parent)
+                       ? $parent->{'eq_source'} : return 'type def missing parent or equality checker source';
+    my $eq_args_source = 'my ($value_a, $value_b, $value_name) = @_;';
+    @lines = ($eq_args_source, $default_name_source, $type->{'eq_source'}, $return_source);
+    @lines = map { '  '.$_."\n" } @lines;
+    my $eq_source = wrap_source_in_anon_sub( join '', @lines );
+    $type->{'equal'} = eval $eq_source;
     return if $@;
+
+  say $eq_source;
+
     return $type;
 }
 
-sub wrap_code_in_anon_sub { return 'sub {'."\n".$_[0]."}\n" if defined $_[0] }
+sub wrap_source_in_anon_sub { return 'sub {'."\n".$_[0]."}\n" if defined $_[0] }
 
 my $value = 45;
 my $type = 'int';
@@ -65,8 +76,8 @@ say "$value is $type"    unless check( $value, 'number of states');
 say "also equal to 45 !" unless not_equal( $value, 45, 'number of states');
 say not_equal( $value, 42, 'number of states');
 
-sub check     { $type_store->{$type}{'checker_ref'}->(@_) }
-sub not_equal { $type_store->{$type}{'eq_ref'}->(@_)      }
+sub check     { $type_store->{$type}{'checker'}->(@_) }
+sub not_equal { $type_store->{$type}{'equal'}->(@_)      }
 
 __END__
 
@@ -79,7 +90,8 @@ basic
   $default_value  |
   ~parent         |
    ==
-   source
-   checker_ref
-   eq_ref
+   checker_source
+   eq_source
+   checker
+   equal
 

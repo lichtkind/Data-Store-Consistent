@@ -24,41 +24,52 @@ sub assemble_basic {
     my $type_def = shift;
     return unless ref $type_def eq 'HASH';
     my $type = {%$type_def};
-    my $parent = (exists $type->{'parent'}) ? $type_store->{ $type->{'parent'} } : undef;
-    $type->{'parent'} = (defined $parent) ? [@{$parent->{'parent'}}, $type->{'parent'}]
-                                          : [];
+
+    $type->{'parents'} = {};
+    if (exists $type->{'parent'}){
+        if (exists $type_store->{ $type->{'parent'} }){
+            $type->{'parent'} = $type_store->{ $type->{'parent'} };
+            $type->{'parents'} = { $type->{'parent'}{'name'} => $type->{'parent'}, %{$type->{'parent'}{'parents'}} };
+        } else { return 'type def has none existent parent' }
+    }
 
   say $type->{'name'};
 
-    my $checker_source_start = (exists $type->{'parent'}[0] and $type->{'parent'}[0] eq 'defined') ? 'of $value ' : '';
-    $checker_source_start = 'return "$value_name '.$checker_source_start.'should be ';
+    my $return_val_source = (exists $type->{'parents'}{'defined'}) ? 'of $value ' : '';
+    $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
     $type->{'checker_source'} = [];
-    push @{$type->{'checker_source'}}, @{$parent->{'checker_source'}} if defined $parent;
-    push @{$type->{'checker_source'}}, $checker_source_start . $type->{'help'}.'" unless '.$type->{'condition'}.";"
+    $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";" ]
         if exists $type->{'condition'} and exists $type->{'help'};
 
-    my $checker_args_source = 'my ($value, $value_name) = @_;';
-    my $default_name_source = '$value_name //= "value";';
-    my $return_source = "return '';";
-    my @lines = ($checker_args_source, $default_name_source, @{$type->{'checker_source'}}, $return_source);
-    @lines = map { '  '.$_."\n" } @lines;
-    my $checker_source = wrap_source_in_anon_sub( join '', @lines );
+    my $T = $type;
+    my @lines = @{$T->{'checker_source'}};
+    while (exists $T->{'parent'}){
+        $T = $T->{'parent'};
+        unshift @lines, @{$T->{'checker_source'}};
+    }
+    unshift @lines, 'sub {',  'my ($value, $value_name) = @_;', '$value_name //= "value";';
+    push @lines,   "return '';", '}';
+    my $checker_source = join '', map { $_."\n" } @lines;
     $type->{'checker'} = eval $checker_source;
     return if $@;
 
   say $checker_source;
 
-    $type->{'default_value'} = $type_store->{ $type->{'parent'} }{'default_value'} unless exists $type->{'default_value'};
-    say $type->{'checker'}->( $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'} );
+    return "type $type->{name} needs default value or parent"
+        unless exists $type->{'default_value'} or exists $type->{'parent'};
+    $type->{'default_value'} = $type->{'parent'}{'default_value'} unless exists $type->{'default_value'};
+    return 'default value does not pass type checks'
+        if $type->{'checker'}->( $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'} );
 
-    $type->{'eq_source'} = (exists $type->{'equality'})
-                       ? 'return "$value_name is $value_a, which is not equal to $value_b" unless '.$type->{'equality'}.";"
-                       : (defined $parent)
-                       ? $parent->{'eq_source'} : return 'type def missing parent or equality checker source';
-    my $eq_args_source = 'my ($value_a, $value_b, $value_name) = @_;';
-    @lines = ($eq_args_source, $default_name_source, $type->{'eq_source'}, $return_source);
-    @lines = map { '  '.$_."\n" } @lines;
-    my $eq_source = wrap_source_in_anon_sub( join '', @lines );
+    return "type $type->{name} needs equality condition: 'equality' or parent"
+        unless exists $type->{'equality'} or exists $type->{'parent'};
+
+    $type->{'eq_source'} = 'return "$value_name is $value_a, which is not equal to $value_b" unless '.
+                            $type->{'equality'}.";" if exists $type->{'equality'};
+    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
+    my $eq_source = join '', map { $_."\n" }
+        'sub {',  'my ($value_a, $value_b, $value_name) = @_;',
+        '$value_name //= "value";', $type->{'eq_source'}, "return '';", '}';
     $type->{'equal'} = eval $eq_source;
     return if $@;
 
@@ -67,7 +78,6 @@ sub assemble_basic {
     return $type;
 }
 
-sub wrap_source_in_anon_sub { return 'sub {'."\n".$_[0]."}\n" if defined $_[0] }
 
 my $value = 45;
 my $type = 'int';
@@ -94,4 +104,4 @@ basic
    eq_source
    checker
    equal
-
+   %parents

@@ -93,8 +93,8 @@ __END__
 basic
   ~name
    --
-  ~help              +
-  ~condition      |  +
+  ~help              &
+  ~condition      |  &
   ~equality       |
   $default_value  |
   ~parent         |
@@ -102,5 +102,5 @@ basic
    checker_source
    eq_source
    checker
-   equal
+   eq_checker
    %parents

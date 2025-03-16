@@ -157,12 +157,13 @@ sub assemble_basic {
                             $type->{'equality'}.";" if exists $type->{'equality'};
     $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
     my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
+
 say $eq_source;
+
     $type->{'eq_checker'} = eval $eq_source;
     return "value equality checker code of basic type $type->{name} has issue: $@" if $@;
     return $type;
 }
-
 
 sub checker_source_lines {
     my $type = shift;

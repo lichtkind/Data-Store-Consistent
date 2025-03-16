@@ -10,9 +10,9 @@ use warnings;
 use Scalar::Util qw/looks_like_number/;
 
 my @basic_type_def = (
- {name=> 'defined', help=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value_a eq $value_b',},
+ {name=> 'defined', help=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value eq $parameter',},
  {name=> 'not_ref', help=> 'not a reference',         condition=> 'not ref $value',             parent=> 'defined',               },
- {name=> 'num',     help=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> 0,  equality=> '$value_a == $value_b',},
+ {name=> 'num',     help=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> 0,  equality=> '$value == $parameter',},
  {name=> 'int',     help=> 'number without decimals', condition=> 'int($value) == $value',      parent=> 'num',                   },
 );
 
@@ -28,8 +28,8 @@ map { my $T = assemble_parametric($_); $type_store->{ $T->{'name'} } = $T } @par
 my $type = assemble_full('int:min(0),max(255)');
 
 my $value = 45;
-say "$value a color value !" unless $type->{'checker'}->( $value, 'color value', {min => 0, max => 255} );
-say "is equal to $value !"   unless $type->{'eq_checker'}->( $value, $value, 'color value', {min => 0, max => 255});
+say "$value a color value !" unless $type->{'checker'}->( $value, {min => 0, max => 255}, 'color value' );
+say "is equal to $value !"   unless $type->{'eq_checker'}->( $value, $value, {min => 0, max => 255}, 'color value');
 say "not equal to 0 !"       if $type->{'eq_checker'}->( $value, 0, 'color value');
 say "bad argument, ",           $type->{'checker'}->( $value, {min => 0, max => 'max'}, 'color value');
 
@@ -37,16 +37,33 @@ say "bad argument, ",           $type->{'checker'}->( $value, {min => 0, max => 
 sub assemble_full {
     my $type_desciption = shift;
     my $type = {};
-    my ($basic_type, $param_types) = split(':', $type_desciption);
-    $basic_type = $type_store->{ $basic_type };
+    my ($base_type, $param_types) = split(':', $type_desciption);
+    $base_type = $type_store->{ $base_type };
     my @param_types = split(',', $param_types);
     @param_types = map {$_->[-1] =~ tr/)//d; $_} map {[split(/\(/, $_)]} @param_types;
 
-    my @lines = basic_source_lines( $basic_type );
-#    say "@$_" for @param_types if ;
+    my @lines = checker_source_lines( $base_type );
+    my $parameter = {};
+    for my $param_type (@param_types){
+        my $type = shift @$param_type;
+        return "parametric type $type is not stored here" unless exists $type_store->{ $type };
+        $type = $type_store->{ $type };
+        return 'parameter type $type->{name} in not derived from base type $base_type->{name}'
+            unless exists $base_type->{'ancestor'}{ $type->{'parent'}{'name'} };
 
- say '--';
-    return $basic_type;
+        my @plines = @{$type->{'checker_source'}};
+        splice @plines, 2, 0, @{$type->{'parameter_checker_source'}};
+        push @lines, @plines;
+        my $value = (@$param_type == 1) ? $param_type->[0] : $param_type;
+        $parameter->{ $type->{'name'} } = $value;
+    }
+    $type->{'source'} = wrap_anon_checker_sub( @lines );
+
+  say $type->{'source'};
+    $type->{'checker'} = eval $type->{'source'};
+    return "type checker code of built type has issue: $@" if $@;
+    $type->{'eq_checker'} = $base_type->{'eq_checker'};
+    return $type;
 }
 
 sub assemble_parametric {
@@ -67,38 +84,36 @@ sub assemble_parametric {
         } else { return 'type def of parametric type: $type->{name} contains unknown parameter type name' }
     }
 
-    my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of $value ' : '';
+    my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
     $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
-    $type->{'checker_source'} = [];
-    $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";" ]
-        if exists $type->{'condition'} and exists $type->{'help'};
-
-    my @lines = ('{', 'my $parameter = $parameter->{"'.$type->{'name'}.'"};', basic_source_lines( $type ), '}'); # insert point: 2
-    splice @lines, 2, 0, ('{', 'my $value = $parameter;', basic_source_lines($type->{'parameter_type'}) ,'}');
-    my $checker_source = join '', map { $_."\n" } wrap_anon_checker_sub( @lines );
+    $type->{'checker_source'} = [ '{', 'my $parameter = $parameter->{"'.$type->{'name'}.'"};',
+                                  $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";", '}' ];
+    $type->{'parameter_checker_source'} = [ '{', 'my $value = $parameter;',
+                                            'my $value_name = "$value_name parameter '.$type->{'name'}.'";',
+                                            checker_source_lines($type->{'parameter_type'}) ,'}' ];
+    my @lines = @{$type->{'checker_source'}};        # insert point: 2
+    splice @lines, 2, 0, @{$type->{'parameter_checker_source'}};
+    unshift @lines, checker_source_lines( $type->{'parent'} );
+    my $checker_source = wrap_anon_checker_sub( @lines );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of parametric type $type->{name} has issue: $@" if $@;
 
   say $checker_source;
 
-    return "parametric type $type->{name} needs default value or parent"
-        unless exists $type->{'default_value'} or exists $type->{'parent'};
     $type->{'default_value'} = $type->{'parent'}{'default_value'} unless exists $type->{'default_value'};
     my $value = $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'};
     my $param = $type->{'parameter_type'}{'default_value'} ? (eval $type->{'parameter_type'}{'default_value'})
                                                            : $type->{'parameter_type'}{'default_value'};
-    return 'type  default value does not pass type checks'
+    return 'default value of parametric type $type->{name} does not pass own type checks'
         if $type->{'checker'}->( $value, { $type->{'name'} => $param }, 'test default values' );
 
 
     return "parametric type $type->{name} needs equality condition: 'equality' or parent"
         unless exists $type->{'equality'} or exists $type->{'parent'};
-    $type->{'eq_source'} = 'return "$value_name is $value_a, which is not equal to $value_b" unless '.
+    $type->{'eq_source'} = 'return "$value_name is $value, which is not equal to $parameter" unless '.
                             $type->{'equality'}.";" if exists $type->{'equality'};
     $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
-    my $eq_source = join '', map { $_."\n" }
-        'sub {',  'my ($value_a, $value_b, $value_name) = @_;',
-        '$value_name //= "value";', $type->{'eq_source'}, "return '';", '}';
+    my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
     $type->{'eq_checker'} = eval $eq_source;
     return "value equality checker code of parametric type $type->{name} has issue: $@" if $@;
 
@@ -120,13 +135,13 @@ sub assemble_basic {
         } else { return "type def of basic type: $type->{name} contains unknown parent type name" }
     }
 
-    my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of $value ' : '';
+    my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
     $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
     $type->{'checker_source'} = [];
     $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";" ]
         if exists $type->{'condition'} and exists $type->{'help'};
 
-    my $checker_source = join '', map { $_."\n" } wrap_anon_checker_sub( basic_source_lines( $type ) );
+    my $checker_source = wrap_anon_checker_sub( checker_source_lines( $type ) );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of basic type $type->{name} has issue: $@" if $@;
 
@@ -138,19 +153,18 @@ sub assemble_basic {
 
     return "type $type->{name} needs equality condition: 'equality' or parent"
         unless exists $type->{'equality'} or exists $type->{'parent'};
-    $type->{'eq_source'} = 'return "$value_name is $value_a, which is not equal to $value_b" unless '.
+    $type->{'eq_source'} = 'return "$value_name is $value, which is not equal to $parameter" unless '.
                             $type->{'equality'}.";" if exists $type->{'equality'};
     $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
-    my $eq_source = join '', map { $_."\n" }
-        'sub {',  'my ($value_a, $value_b, $value_name) = @_;',
-        '$value_name //= "value";', $type->{'eq_source'}, "return '';", '}';
+    my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
+say $eq_source;
     $type->{'eq_checker'} = eval $eq_source;
     return "value equality checker code of basic type $type->{name} has issue: $@" if $@;
     return $type;
 }
 
 
-sub basic_source_lines {
+sub checker_source_lines {
     my $type = shift;
     my @lines = @{$type->{'checker_source'}};
     while (exists $type->{'parent'}){
@@ -164,14 +178,9 @@ sub wrap_anon_checker_sub {
     my @lines = @_;
     unshift @lines, 'sub {',  'my ($value, $parameter, $value_name) = @_;', '$value_name //= "value";';
     push @lines,   "return '';", '}';
-    @lines;
+    join '', map { $_."\n" } @lines;
 }
-sub wrap_eq_checker_sub {
-    my @lines = @_;
-    unshift @lines, 'sub {',  'my ($value_a, $value_b, $value_name) = @_;', '$value_name //= "value";';
-    push @lines,   "return '';", '}';
-    @lines;
-}
+
 
 __END__
 basic

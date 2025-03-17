@@ -112,39 +112,56 @@ sub is_str { (defined $_[0] and $_[0] and not ref $_[0]) ? 1 : 0 }
 1;
 
 __END__
-basic
+# basic
   ~name
    --
-  ~help              +
-  ~check_code     |  +
-  ~eq_code        |
+  ~help              &
+  ~condition      |  &
+  ~equality       |
   $default_value  |
   ~parent         |
    ==
-   source
-   check_ref
-   eq_ref
+   checker_source
+   eq_source
+   checker
+   eq_checker
 
-parametric: +
-  :param_type
-   ==
-   source
-   check_ref
-   eq_ref
-
-argument: +
+# parametric: +
   ~name
-  ~parent
- :~$value (eval)
+  :param_type
+  ~help
+  ~condition
+   --
+  $default_value  |
+  ~parent         |
+   ==
+   checker_source
+   eq_source
+   checker
+   eq_checker
 
-property: +
+# argument:
+  ~name
+  ~help
+  ~parametric_type
+  $parameter_value
+   --
+  ~parent         |
+   ==
+  %ancestor
+  @~checker_source
+   ~eq_source
+  &checker
+  &eq_checker
+
+# property: +
   ~name
   ~help
   ~code
  :~type
   ~parent
 
-combinator: +
+# combinator: +
   ~name ... of the combination (UC !)
   ~help ?
   ~parent

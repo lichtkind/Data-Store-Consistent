@@ -22,7 +22,7 @@ our @basic = (
 
 our @parametric = (
  {name=> 'min',       help=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter',      parent => 'num',  parameter_type=> 'num', },
- {name=> 'inf',       help=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter',      parent => 'num',  parameter_type=> 'num', },
+ {name=> 'inf',       help=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter',      parent => 'num',  parameter_type=> 'num', default_value => '1'},
  {name=> 'max',       help=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter',      parent => 'num',  parameter_type=> 'num', },
  {name=> 'sup',       help=> 'less then supremum of $parameter',            condition=> '$value <  $parameter',      parent => 'num',  parameter_type=> 'num', },
  {name=> 'ref',       help=> 'a $parameter reference',                      condition=> 'ref $value eq $parameter',                    parameter_type=> 'str', },
@@ -32,11 +32,11 @@ our @parametric = (
 );
 
 our @argument = (
- {name=> 'pos',       help=> 'positive number',         parent=> 'min',      value=> 0 },
- {name=> 'spos',      help=> 'strictly positive number',parent=> 'inf',      value=> 0 },
- {name=> 'array',     help=> 'ARRAY reference',         parent=> 'ref',      value=> 'ARRAY' },
- {name=> 'hash',      help=> 'HASH reference',          parent=> 'ref',      value=> 'HASH' },
- {name=> 'code',      help=> 'CODE reference',          parent=> 'ref',      value=> 'CODE' },
+ {name=> 'pos',       help=> 'positive number',         parametric_type=> 'min',      parameter_value=> '0' },
+ {name=> 'spos',      help=> 'strictly positive number',parametric_type=> 'inf',      parameter_value=> '0' },
+ {name=> 'array',     help=> 'ARRAY reference',         parametric_type=> 'ref',      parameter_value=> 'ARRAY' },
+ {name=> 'hash',      help=> 'HASH reference',          parametric_type=> 'ref',      parameter_value=> 'HASH' },
+ {name=> 'code',      help=> 'CODE reference',          parametric_type=> 'ref',      parameter_value=> 'CODE' },
 );
 
 our @property = (

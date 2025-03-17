@@ -42,7 +42,7 @@ sub assemble_full {
     my @param_types = split(',', $param_types);
     @param_types = map {$_->[-1] =~ tr/)//d; $_} map {[split(/\(/, $_)]} @param_types;
 
-    my @lines = checker_source_lines( $base_type );
+    my @lines = combine_checker_source( $base_type );
     my $parameter = {};
     for my $param_type (@param_types){
         my $type = shift @$param_type;
@@ -59,7 +59,9 @@ sub assemble_full {
     }
     $type->{'source'} = wrap_anon_checker_sub( @lines );
 
+  say " == $type_desciption ==";
   say $type->{'source'};
+
     $type->{'checker'} = eval $type->{'source'};
     return "type checker code of built type has issue: $@" if $@;
     $type->{'eq_checker'} = $base_type->{'eq_checker'};
@@ -71,13 +73,9 @@ sub assemble_parametric {
     return unless ref $type_def eq 'HASH';
     my $type = {%$type_def};
 
-    $type->{'ancestor'} = {};
-    if (exists $type->{'parent'}){
-        if (exists $type_store->{ $type->{'parent'} }){
-            $type->{'parent'} = $type_store->{ $type->{'parent'} };
-            $type->{'ancestor'} = { $type->{'parent'}{'name'} => $type->{'parent'}, %{$type->{'parent'}{'ancestor'}} };
-        } else { return 'type def of parametric type: $type->{name} contains unknown parent type name' }
-    }
+    return 'type def of parametric type: $type->{name} contains unknown parent type name'
+        unless ref link_lineage($type);
+
     if ($type->{'parameter_type'}){
         if (exists $type_store->{ $type->{'parameter_type'} }){
             $type->{'parameter_type'} = $type_store->{ $type->{'parameter_type'} };
@@ -89,11 +87,11 @@ sub assemble_parametric {
     $type->{'checker_source'} = [ '{', 'my $parameter = $parameter->{"'.$type->{'name'}.'"};',
                                   $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";", '}' ];
     $type->{'parameter_checker_source'} = [ '{', 'my $value = $parameter;',
-                                            'my $value_name = "$value_name parameter '.$type->{'name'}.'";',
-                                            checker_source_lines($type->{'parameter_type'}) ,'}' ];
+                                            'my $value_name = "$value_name parameter \''.$type->{'name'}.'\'";',
+                                            combine_checker_source($type->{'parameter_type'}) ,'}' ];
     my @lines = @{$type->{'checker_source'}};        # insert point: 2
     splice @lines, 2, 0, @{$type->{'parameter_checker_source'}};
-    unshift @lines, checker_source_lines( $type->{'parent'} );
+    unshift @lines, combine_checker_source( $type->{'parent'} );
     my $checker_source = wrap_anon_checker_sub( @lines );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of parametric type $type->{name} has issue: $@" if $@;
@@ -127,13 +125,8 @@ sub assemble_basic {
     return unless ref $type_def eq 'HASH';
     my $type = {%$type_def};
 
-    $type->{'ancestor'} = {};
-    if (exists $type->{'parent'}){
-        if (exists $type_store->{ $type->{'parent'} }){
-            $type->{'parent'} = $type_store->{ $type->{'parent'} };
-            $type->{'ancestor'} = { $type->{'parent'}{'name'} => $type->{'parent'}, %{$type->{'parent'}{'ancestor'}} };
-        } else { return "type def of basic type: $type->{name} contains unknown parent type name" }
-    }
+    return "type def of basic type: $type->{name} contains unknown parent type name"
+        unless ref link_lineage( $type );
 
     my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
     $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
@@ -141,7 +134,7 @@ sub assemble_basic {
     $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";" ]
         if exists $type->{'condition'} and exists $type->{'help'};
 
-    my $checker_source = wrap_anon_checker_sub( checker_source_lines( $type ) );
+    my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of basic type $type->{name} has issue: $@" if $@;
 
@@ -165,7 +158,20 @@ say $eq_source;
     return $type;
 }
 
-sub checker_source_lines {
+sub link_lineage {
+    my $type = shift;
+    return unless ref $type eq 'HASH';
+    $type->{'ancestor'} = {};
+    if (exists $type->{'parent'}){
+        if (exists $type_store->{ $type->{'parent'} }){
+            $type->{'parent'} = $type_store->{ $type->{'parent'} };
+            $type->{'ancestor'} = { $type->{'parent'}{'name'} => $type->{'parent'}, %{$type->{'parent'}{'ancestor'}} };
+        } else { return;  }
+    }
+    $type;
+}
+
+sub combine_checker_source {
     my $type = shift;
     my @lines = @{$type->{'checker_source'}};
     while (exists $type->{'parent'}){

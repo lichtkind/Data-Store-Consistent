@@ -64,12 +64,9 @@ sub assemble_basic {
     return 'default value of basic type $type->{name} does not pass its own type check'
         if $type->{'checker'}->( $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'} );
 
-    return "type $type->{name} needs equality condition: 'equality' or parent"
+    return "basic type $type->{name} needs equality condition: 'equality' or parent with one"
         unless exists $type->{'equality'} or exists $type->{'parent'};
-    $type->{'eq_source'} = 'return "$value_name is $value, which is not equal to $parameter" unless '.
-                            $type->{'equality'}.";" if exists $type->{'equality'};
-    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
-    my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
+    my $eq_source = wrap_anon_checker_sub( set_eq_source( $type ) );
     $type->{'eq_checker'} = eval $eq_source;
     return "value equality checker code of basic type $type->{name} has issue: $@" if $@;
 
@@ -86,6 +83,14 @@ sub combine_checker_source {
         unshift @lines, @{$type->{'checker_source'}};
     }
     @lines;
+}
+
+sub set_eq_source {
+    my $type = shift;
+    $type->{'eq_source'} = 'return "$value_name has value of \'$value\', but expected was \'$parameter\'" unless '.
+                            $type->{'equality'}.";" if exists $type->{'equality'};
+    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
+    $type->{'eq_source'};
 }
 
 sub wrap_anon_checker_sub {

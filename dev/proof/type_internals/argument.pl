@@ -34,9 +34,8 @@ sub check_named {
 }
 
 sub not_equal {
-    my ($value_a, $value_b, $value_name, $param) = @_;
+    my ($value, $parameter, $value_name) = @_;
     $value_name //= "value";
-
-    return "$value_name of $value_a is not equal to $value_b" unless $value_a == $value_b;
+    return "$value_name has value of '$value', but expected was $parameter" unless $value == $parameter;
     return '';
 }

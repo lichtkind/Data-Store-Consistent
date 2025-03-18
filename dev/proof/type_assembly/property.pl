@@ -29,23 +29,69 @@ my @property_def = (
 my $type_store = {};
 map { my $T = assemble_basic($_); $type_store->{ $T->{'name'} } = $T }      @basic_type_def;
 map { my $T = assemble_parametric($_); $type_store->{ $T->{'name'} } = $T } @param_type_def;
-map { my $T = assemble_argument($_); $type_store->{ $T->{'name'} } = $T }   @property_def;
-#my $type = assemble_full('str[length:is(3)])');
+map { my $T = assemble_property($_); $type_store->{ $T->{'name'} } = $T }   @property_def;
+my $type = assemble_full('str [ length:is( 3 ) ] ');
 
-# my $value = 45;
-# say "$value is strictly positive !" unless $type->{'checker'}->( $value, {}, 'random number' );
-# say "is equal to $value !"   unless $type->{'eq_checker'}->( $value, $value, {}, 'random number');
-# say "not equal to 0 !"       if $type->{'eq_checker'}->( $value, 1, 'random number');
-#say "bad argument, ",           $type->{'checker'}->( 0, {}, 'zero');
+my $value = '101';
+say "$value has is str of length 3 !" unless $type->{'checker'}->( $value, {length => {is => 3}}, 'one cellgraph pattern' );
+say "is equal to '$value' !"    unless $type->{'eq_checker'}->( $value, $value,  'one cellgraph pattern');
+say "not equal to '010' !"          if $type->{'eq_checker'}->( $value, '010',  'one cellgraph pattern');
+# say "bad argument, ",           $type->{'checker'}->( 0, {}, 'zero');
 
-
-#        my $property_name = 'length';
-#        my $param = $param->{$property_name};
-#        my $value_name = "$property_name of $value_name";
 
 sub assemble_full {
     my $type_desciption = shift;
+    $type_desciption =~ tr/ //d; # delete space
+    my $ret_type = {};
+    my ($type, $properties) = split('\[', $type_desciption);
+    $properties =~ tr/]//d;
+    my ($base_type, $param_types) = split(':', $type);
+    return "base type $base_type is unknown" unless exists $type_store->{ $base_type };
+    $base_type = $type_store->{ $base_type };
 
+    my (@properties) = split(';', $properties);
+    return 'no type properties in square brackets' unless @properties;
+    my @prop_def;
+    for my $property (@properties){
+        my ($name, @conditions) = split(':', $property);
+        push @prop_def, [$name, []];
+        for my $condition (@conditions){
+            chop $condition;
+            my ($name, $args) = split('\(', $condition);
+             my (@args) = split(',', $args);
+            push @{$prop_def[-1][1]}, [$name, \@args];
+        }
+    }
+    my @lines = (combine_checker_source( $base_type ), '', 'my %property = (id => $value);');
+    for my $property (@prop_def){
+        my $name = $property->[0];
+        return "type property '$name' is unkown" unless exists $type_store->{ $name };
+        $property->[0] = $type_store->{ $name };
+        my $parent = $property->[0]{'parent'}{'name'};
+        return "type property '$name' can only derive from type '$parent'"
+            unless $parent eq $base_type->{'name'} or exists $base_type->{'ancestor'}{$parent};
+        push @lines, @{$property->[0]{'seed_source'}};
+    }
+    for my $property (@prop_def){
+        my $prop_obj = $property->[0];
+        my @prop_lines = @{$prop_obj->{'checker_source'}};
+        for my $add_type (@{$property->[1]}){
+            if ($add_type->[0] eq 'is'){
+                return "equality check definition in property '$prop_obj->{name}' is missing an argument"
+                    unless exists $add_type->[1] and @{$add_type->[1]} == 1;
+                splice(@prop_lines, $prop_obj->{'source_insert_pos'}, 0, '{',
+                'return "equality check parameter for type property \'$property_name\' is missing" unless ref $parameter eq "HASH" and exists $parameter->{is};',
+                'my $parameter = $parameter->{is};',
+                $prop_obj->{'type'}{'eq_source'},
+                '}');
+            }
+        }
+        push @lines, @prop_lines;
+    }
+    $ret_type->{'checker'} = eval wrap_checker_source( @lines );
+    return "custom type '$type_desciption' has issue: $@" if $@;
+    $ret_type->{'eq_checker'} = $base_type->{'eq_checker'};
+    $ret_type;
 }
 
 sub assemble_property {
@@ -53,47 +99,19 @@ sub assemble_property {
     return unless ref $type_def eq 'HASH';
     my $property = {%$type_def};
 
-say $type->{'name'};
-
     return "type property def: $type->{name} contains unknown parent type name"
         unless ref link_lineage( $property );
     return "type property $property->{name} has unknow type: $property->{type}!"
         unless exists $type_store->{ $property->{'type'} };
     $property->{'type'} = $type_store->{ $property->{'type'} };
-    unless (exists $type->{'parent'}){
-        $type->{'parent'} = $type->{'parametric_type'}{'parent'};
-        $type->{'ancestor'} = $type->{'parametric_type'}{'ancestor'};
-    }
 
-    my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
-    $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
-    my $condition = $type->{'parametric_type'}{'condition'};
-    my $val = '"' . $type->{'parameter_value'} . '"';
-    $condition =~ s/\$parameter/$val/;
-    $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$condition.";" ];
-
-    my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
-    $type->{'checker'} = eval $checker_source;
-    return "type checker code of argument type $type->{name} has issue: $@" if $@;
-
-  say "$checker_source";
-
-    $type->{'default_value'} = $type->{'parametric_type'}{'default_value'} unless exists $type->{'default_value'};
-    my $default_value = $type->{'default_value'} ? (eval $type->{'default_value'}) : $type->{'default_value'};
-    return 'default value of argument type $type->{name} does not pass own type checks'
-        if $type->{'checker'}->( $default_value, { }, 'test default value' );
-
-    return "parametric type $type->{name} needs equality condition: 'equality' or parent"
-        unless exists $type->{'equality'} or exists $type->{'parent'};
-    $type->{'eq_source'} = 'return "$value_name is $value, which is not equal to $parameter" unless '.
-                            $type->{'equality'}.";" if exists $type->{'equality'};
-    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
-    my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
-    $type->{'eq_checker'} = eval $eq_source;
-    return "value equality checker code of argument type $type->{name} has issue: $@" if $@;
-    return 'default value of parametric type $type->{name} does not pass its own equality check'
-        if $type->{'eq_checker'}->( $default_value, $default_value, 'test default value' );
-
+    $property->{'seed_source'} = ['$property{\''."$property->{name}'} = $property->{calculation};"];
+    my @boiler_plate_source = ('{','my $property_name = \''.$property->{name}.'\';',
+                               'my $value = $property{$property_name};',
+                               'my $parameter = $parameter->{$property_name} if ref $parameter eq "HASH" and exists $parameter->{$property_name};',
+                               'my $value_name = "$property_name of $value_name";');
+    $property->{'checker_source'} = [@boiler_plate_source, '',combine_checker_source( $property->{'type'} ), '}' ];
+    $property->{'source_insert_pos'} = -1;
     return $property;
 }
 
@@ -120,7 +138,7 @@ sub assemble_parametric {
     my @lines = @{$type->{'checker_source'}};        # insert point: 2
     splice @lines, 2, 0, @{$type->{'parameter_checker_source'}};
     unshift @lines, combine_checker_source( $type->{'parent'} );
-    my $checker_source = wrap_anon_checker_sub( @lines );
+    my $checker_source = wrap_checker_source( @lines );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of parametric type $type->{name} has issue: $@" if $@;
 
@@ -131,13 +149,9 @@ sub assemble_parametric {
     return 'default value of parametric type $type->{name} does not pass own type checks'
         if $type->{'checker'}->( $default_value, { $type->{'name'} => $param }, 'test default values' );
 
-    return "parametric type $type->{name} needs equality condition: 'equality' or parent"
+    return "parametric type $type->{name} needs equality condition: 'equality' or parent with one"
         unless exists $type->{'equality'} or exists $type->{'parent'};
-    $type->{'eq_source'} = 'return "$value_name is $value, which is not equal to $parameter" unless '.
-                            $type->{'equality'}.";" if exists $type->{'equality'};
-    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
-    my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
-    $type->{'eq_checker'} = eval $eq_source;
+    $type->{'eq_checker'} = eval wrap_checker_source( set_eq_source( $type ) );
     return "value equality checker code of parametric type $type->{name} has issue: $@" if $@;
     return 'default value of parametric type $type->{name} does not pass its own equality check'
         if $type->{'eq_checker'}->( $default_value, $default_value, 'test default value' );
@@ -159,7 +173,7 @@ sub assemble_basic {
     $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";" ]
         if exists $type->{'condition'} and exists $type->{'description'};
 
-    my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
+    my $checker_source = wrap_checker_source( combine_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of basic type $type->{name} has issue: $@" if $@;
 
@@ -170,14 +184,9 @@ sub assemble_basic {
     return 'default value of basic type $type->{name} does not pass its own type check'
         if $type->{'checker'}->( $default_value, {}, 'test default value' );
 
-    return "type $type->{name} needs equality condition: 'equality' or parent"
+    return "basic type $type->{name} needs equality condition: 'equality' or parent with one"
         unless exists $type->{'equality'} or exists $type->{'parent'};
-    $type->{'eq_source'} = 'return "$value_name is $value, which is not equal to $parameter" unless '.
-                            $type->{'equality'}.";" if exists $type->{'equality'};
-    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
-    my $eq_source = wrap_anon_checker_sub( $type->{'eq_source'} );
-
-    $type->{'eq_checker'} = eval $eq_source;
+    $type->{'eq_checker'} = eval wrap_checker_source( set_eq_source( $type ) );
     return "value equality checker code of basic type $type->{name} has issue: $@" if $@;
     return 'default value of basic type $type->{name} does not pass its own equality check'
         if $type->{'eq_checker'}->( $default_value, $default_value, 'test default value' );
@@ -208,7 +217,15 @@ sub combine_checker_source {
     @lines;
 }
 
-sub wrap_anon_checker_sub {
+sub set_eq_source {
+    my $type = shift;
+    $type->{'eq_source'} = 'return "$value_name has value of \'$value\', but expected was \'$parameter\'" unless '.
+                            $type->{'equality'}.";" if exists $type->{'equality'};
+    $type->{'eq_source'} = $type->{'parent'}{'eq_source'} unless exists $type->{'eq_source'};
+    $type->{'eq_source'};
+}
+
+sub wrap_checker_source {
     my @lines = @_;
     unshift @lines, 'sub {',  'my ($value, $parameter, $value_name) = @_;', '$value_name //= "value";';
     push @lines,   "return '';", '}';
@@ -218,5 +235,17 @@ sub wrap_anon_checker_sub {
 
 __END__
 property: +
+  ~name
+  ~description
+  ~calculation
+  ~parent
+  ~type
+    --
+    ==
+  %ancestor
+  @~checker_source
+   ~eq_source
+  &checker
+  &eq_checker
 
 

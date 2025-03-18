@@ -11,10 +11,10 @@ use warnings;
 use Scalar::Util qw/looks_like_number/;
 
 my @type_def = (
- {name=> 'defined', help=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value eq $parameter',},
- {name=> 'not_ref', help=> 'not a reference',         condition=> 'not ref $value',             parent=> 'defined',               },
- {name=> 'num',     help=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> 0,  equality=> '$value == $parameter',},
- {name=> 'int',     help=> 'number without decimals', condition=> 'int($value) == $value',      parent=> 'num',                   },
+ {name=> 'defined', description=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value eq $parameter',},
+ {name=> 'not_ref', description=> 'not a reference',         condition=> 'not ref $value',             parent=> 'defined',               },
+ {name=> 'num',     description=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> 0,  equality=> '$value == $parameter',},
+ {name=> 'int',     description=> 'number without decimals', condition=> 'int($value) == $value',      parent=> 'num',                   },
 );
 my $type_store = {};
 map { my $T = assemble_basic($_); $type_store->{ $T->{'name'} } = $T } @type_def;
@@ -49,8 +49,8 @@ sub assemble_basic {
     my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
     $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
     $type->{'checker_source'} = [];
-    $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";" ]
-        if exists $type->{'condition'} and exists $type->{'help'};
+    $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";" ]
+        if exists $type->{'condition'} and exists $type->{'description'};
 
     my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
@@ -101,7 +101,7 @@ __END__
 basic
   ~name
    --
-  ~help              &
+  ~description              &
   ~condition      |  &
   ~equality       |
   $default_value  |

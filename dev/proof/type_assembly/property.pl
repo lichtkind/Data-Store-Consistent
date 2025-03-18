@@ -62,7 +62,7 @@ sub assemble_full {
             push @{$prop_def[-1][1]}, [$name, \@args];
         }
     }
-    my @lines = (combine_checker_source( $base_type ), '', 'my %property = (id => $value);');
+    my @lines = (combine_ancestor_checker_source( $base_type ), '', 'my %property = (id => $value);');
     for my $property (@prop_def){
         my $name = $property->[0];
         return "type property '$name' is unkown" unless exists $type_store->{ $name };
@@ -110,7 +110,7 @@ sub assemble_property {
                                'my $value = $property{$property_name};',
                                'my $parameter = $parameter->{$property_name} if ref $parameter eq "HASH" and exists $parameter->{$property_name};',
                                'my $value_name = "$property_name of $value_name";');
-    $property->{'checker_source'} = [@boiler_plate_source, '',combine_checker_source( $property->{'type'} ), '}' ];
+    $property->{'checker_source'} = [@boiler_plate_source, '',combine_ancestor_checker_source( $property->{'type'} ), '}' ];
     $property->{'source_insert_pos'} = -1;
     return $property;
 }
@@ -134,10 +134,10 @@ sub assemble_parametric {
                                   $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";", '}' ];
     $type->{'parameter_checker_source'} = [ '{', 'my $value = $parameter;',
                                             'my $value_name = "$value_name parameter \''.$type->{'name'}.'\'";',
-                                            combine_checker_source($type->{'parameter_type'}) ,'}' ];
+                                            combine_ancestor_checker_source($type->{'parameter_type'}) ,'}' ];
     my @lines = @{$type->{'checker_source'}};        # insert point: 2
     splice @lines, 2, 0, @{$type->{'parameter_checker_source'}};
-    unshift @lines, combine_checker_source( $type->{'parent'} );
+    unshift @lines, combine_ancestor_checker_source( $type->{'parent'} );
     my $checker_source = wrap_checker_source( @lines );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of parametric type $type->{name} has issue: $@" if $@;
@@ -173,7 +173,7 @@ sub assemble_basic {
     $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";" ]
         if exists $type->{'condition'} and exists $type->{'description'};
 
-    my $checker_source = wrap_checker_source( combine_checker_source( $type ) );
+    my $checker_source = wrap_checker_source( combine_ancestor_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of basic type $type->{name} has issue: $@" if $@;
 
@@ -207,7 +207,7 @@ sub link_lineage {
     $type;
 }
 
-sub combine_checker_source {
+sub combine_ancestor_checker_source {
     my $type = shift;
     my @lines = @{$type->{'checker_source'}};
     while (exists $type->{'parent'}){

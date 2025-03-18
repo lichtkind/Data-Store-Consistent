@@ -52,7 +52,7 @@ sub assemble_basic {
     $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";" ]
         if exists $type->{'condition'} and exists $type->{'description'};
 
-    my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
+    my $checker_source = wrap_anon_checker_sub( combine_ancestor_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
     return "type checker code of basic type $type->{name} has issue: $@" if $@;
 
@@ -75,7 +75,7 @@ sub assemble_basic {
     return $type;
 }
 
-sub combine_checker_source {
+sub combine_ancestor_checker_source {
     my $type = shift;
     my @lines = @{$type->{'checker_source'}};
     while (exists $type->{'parent'}){

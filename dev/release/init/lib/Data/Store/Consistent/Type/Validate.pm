@@ -22,10 +22,10 @@ sub definition {
 sub get_kind {
     my ($def) = @_;
     return unless ref $def eq 'HASH';
-    my $kind = (exists $def->{'param_type'})    ? 'parametric' :
-               (exists $def->{'value'})         ? 'argument'   :
-               (exists $def->{'type'})          ? 'property'   :
-               (exists $def->{'component_pos'}) ? 'combinator' : 'basic';
+    my $kind = (exists $def->{'parameter_type'})  ? 'parametric' :
+               (exists $def->{'parameter_value'}) ? 'argument'   :
+               (exists $def->{'calculation'})     ? 'property'   :
+               (exists $def->{'component_pos'})   ? 'combinator' : 'basic';
     $kind;
 }
 
@@ -34,16 +34,15 @@ sub basic {
     my ($def) = @_;
     return "type definition is no HASH" unless ref $def eq 'HASH';
     my $error_sum = '';
-    $error_sum .= "type definition lacks property name\n" unless exists $def->{ 'name' };
+    $error_sum .= "type definition lacks property name\n"        unless exists $def->{ 'name' };
+    $error_sum .= "type definition lacks property description\n" unless exists $def->{ 'description' };
     unless (exists $def->{ 'parent' }){
-        for my $key (qw/check_code eq_code default_value/){
-            $error_sum .=  "type definition without property $key lacks parent\n" unless exists $def->{ $key };
+        for my $key (qw/condition equality default_value/){
+            $error_sum .=  "type definition without parent has to have property: '$key'\n" unless exists $def->{ $key };
         }
     }
-    return "type definition has to have both properties 'help' and 'check_code' \n"
-        if (exists $def->{ 'help' }) xor (exists $def->{ 'check_code' });
-    for my $key (qw/name help check_code eq_code parent/){
-        return "type $key has to be a string \n" if exists $def->{$key} and not is_str( $def->{$key} );
+    for my $key (qw/name description condition equality parent/){
+        return "type property: '$key' has to be a string \n" if exists $def->{$key} and not is_str( $def->{$key} );
     }
     return $error_sum;
 }
@@ -52,9 +51,9 @@ sub parametric {
     my ($def) = @_;
     return "type definition is no HASH" unless ref $def eq 'HASH';
     my $error_sum = basic( $def );
-    for my $key (qw/param_name param_type/){
-        return "type definition lacks property $key" unless exists $def->{ $key };
-        return "type property $key has to be a string" unless is_str( $def->{ $key } );
+    for my $key (qw/parameter_type/){
+        $error_sum .= "type definition lacks property $key" unless exists $def->{ $key };
+        $error_sum .= "type property $key has to be a string" unless is_str( $def->{ $key } );
     }
     return $error_sum;
 }
@@ -62,20 +61,22 @@ sub parametric {
 sub argument {
     my ($def) = @_;
     return "type definition is no HASH" unless ref $def eq 'HASH';
-    for my $key (qw/name parent value/){
-        return "type definition lacks property $key" unless exists $def->{ $key };
+    my $error_sum = '';
+    for my $key (qw/name description parametric_type parameter_value/){
+        $error_sum .= "type definition lacks property $key" unless exists $def->{ $key };
+        next if $key eq 'parameter_value';
+        $error_sum .= "type property '$key' has to be a string" unless is_str( $def->{$key} );
     }
-    return "type name has to be a string" unless is_str( $def->{'name'} );
-    return "type parent has to be a string" unless is_str( $def->{'parent'} );
+    return $error_sum;
 }
 
 sub property {
     my ($def) = @_;
     return "type definition is no HASH" unless ref $def eq 'HASH';
     my $error_sum = '';
-    for my $key (qw/name help code type parent/){
-        return "type definition lacks property $key" unless exists $def->{ $key };
-        return "type property $key has to be a string" unless is_str( $def->{ $key } );
+    for my $key (qw/name description calculation type parent/){
+        $error_sum .= "type definition lacks property $key" unless exists $def->{ $key };
+        $error_sum .= "type property $key has to be a string" unless is_str( $def->{ $key } );
     }
     return $error_sum;
 }
@@ -114,8 +115,8 @@ sub is_str { (defined $_[0] and $_[0] and not ref $_[0]) ? 1 : 0 }
 __END__
 # basic
   ~name
+  ~description       &
    --
-  ~help              &
   ~condition      |  &
   ~equality       |
   $default_value  |
@@ -128,9 +129,9 @@ __END__
 
 # parametric: +
   ~name
-  :param_type
-  ~help
+  ~description
   ~condition
+  :param_type
    --
   $default_value  |
   ~parent         |
@@ -142,7 +143,7 @@ __END__
 
 # argument:
   ~name
-  ~help
+  ~description
   ~parametric_type
   $parameter_value
    --
@@ -156,14 +157,17 @@ __END__
 
 # property: +
   ~name
-  ~help
-  ~code
+  ~description
+  ~calculation
  :~type
   ~parent
+   --
+   ==
+ {name=> 'length',    help=> 'an string with length of $param',  calculation=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
 
 # combinator: +
   ~name ... of the combination (UC !)
-  ~help ?
+  ~description ?
   ~parent
   ~@$default_value
   @~check_code

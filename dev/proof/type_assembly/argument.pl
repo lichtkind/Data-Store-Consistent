@@ -10,20 +10,20 @@ use warnings;
 use Scalar::Util qw/looks_like_number/;
 
 my @basic_type_def = (
- {name=> 'defined', help=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value eq $parameter',},
- {name=> 'not_ref', help=> 'not a reference',         condition=> 'not ref $value',             parent=> 'defined',               },
- {name=> 'num',     help=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> '0',  equality=> '$value == $parameter',},
- {name=> 'int',     help=> 'number without decimals', condition=> 'int($value) == $value',      parent=> 'num',                   },
+ {name=> 'defined', description=> 'a defined value',         condition=> 'defined $value',                                 default_value=> '', equality=> '$value eq $parameter',},
+ {name=> 'not_ref', description=> 'not a reference',         condition=> 'not ref $value',             parent=> 'defined',               },
+ {name=> 'num',     description=> 'any type of number',      condition=> 'looks_like_number($value)',  parent=> 'not_ref', default_value=> '0',  equality=> '$value == $parameter',},
+ {name=> 'int',     description=> 'number without decimals', condition=> 'int($value) == $value',      parent=> 'num',                   },
 );
 
 my @param_type_def = (
- {name=> 'min',     help=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter', parent=> 'num', parameter_type=> 'num',},
- {name=> 'max',     help=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter', parent=> 'num', parameter_type=> 'num',},
- {name=> 'inf',     help=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter', parent=> 'num', parameter_type=> 'num', default_value => '1'},
+ {name=> 'min',     description=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter', parent=> 'num', parameter_type=> 'num',},
+ {name=> 'max',     description=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter', parent=> 'num', parameter_type=> 'num',},
+ {name=> 'inf',     description=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter', parent=> 'num', parameter_type=> 'num', default_value => '1'},
 );
 
 my @arg_type_def = (
- {name=> 'spos',      help=> 'a strictly positive number',  parametric_type=> 'inf', parameter_value=> '0' },
+ {name=> 'spos',    description=> 'a strictly positive number',  parametric_type=> 'inf', parameter_value=> '0' },
 );
 
 my $type_store = {};
@@ -52,7 +52,7 @@ sub assemble_argument {
 
 say $type->{'name'};
 
-    return 'type def of argument type: $type->{name} contains unknown parent type name'
+    return "type def of argument type: $type->{name} contains unknown parent type name"
         unless ref link_lineage($type);
     return '"parametric_type" of argument type: $type->{name} is unkown!'
         unless exists $type_store->{ $type->{'parametric_type'} };
@@ -67,7 +67,7 @@ say $type->{'name'};
     my $condition = $type->{'parametric_type'}{'condition'};
     my $val = '"' . $type->{'parameter_value'} . '"';
     $condition =~ s/\$parameter/$val/;
-    $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$condition.";" ];
+    $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$condition.";" ];
 
     my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
@@ -99,18 +99,18 @@ sub assemble_parametric {
     return unless ref $type_def eq 'HASH';
     my $type = {%$type_def};
 
-    return 'type def of parametric type: $type->{name} contains unknown parent type name'
+    return "type def of parametric type: $type->{name} contains unknown parent type name"
         unless ref link_lineage($type);
     if ($type->{'parameter_type'}){
         if (exists $type_store->{ $type->{'parameter_type'} }){
             $type->{'parameter_type'} = $type_store->{ $type->{'parameter_type'} };
-        } else { return 'type def of parametric type: $type->{name} contains unknown parameter type name' }
+        } else { return "type def of parametric type: $type->{name} contains unknown parameter type name: $type->{'parameter_type'}" }
     }
 
     my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
     $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
     $type->{'checker_source'} = [ '{', 'my $parameter = $parameter->{"'.$type->{'name'}.'"};',
-                                  $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";", '}' ];
+                                  $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";", '}' ];
     $type->{'parameter_checker_source'} = [ '{', 'my $value = $parameter;',
                                             'my $value_name = "$value_name parameter \''.$type->{'name'}.'\'";',
                                             combine_checker_source($type->{'parameter_type'}) ,'}' ];
@@ -153,8 +153,8 @@ sub assemble_basic {
     my $return_val_source = (exists $type->{'ancestor'}{'defined'}) ? 'of \'$value\' ' : '';
     $return_val_source = 'return "$value_name '.$return_val_source.'should be ';
     $type->{'checker_source'} = [];
-    $type->{'checker_source'} = [ $return_val_source . $type->{'help'}.'" unless '.$type->{'condition'}.";" ]
-        if exists $type->{'condition'} and exists $type->{'help'};
+    $type->{'checker_source'} = [ $return_val_source . $type->{'description'}.'" unless '.$type->{'condition'}.";" ]
+        if exists $type->{'condition'} and exists $type->{'description'};
 
     my $checker_source = wrap_anon_checker_sub( combine_checker_source( $type ) );
     $type->{'checker'} = eval $checker_source;
@@ -217,7 +217,7 @@ __END__
 parametric: +
   ~name
   :param_type
-  ~help
+  ~description
   ~condition
    --
   $default_value  |
@@ -231,7 +231,7 @@ parametric: +
 
 argument:
   ~name
-  ~help
+  ~description
   ~parametric_type
   $parameter_value
    --

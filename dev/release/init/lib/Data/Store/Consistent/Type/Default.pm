@@ -21,11 +21,11 @@ our @basic = (
 );
 
 our @parametric = (
- {name=> 'min',       description=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter',      parent => 'num',  parameter_type=> 'num', },
- {name=> 'inf',       description=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter',      parent => 'num',  parameter_type=> 'num', default_value => '1'},
- {name=> 'max',       description=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter',      parent => 'num',  parameter_type=> 'num', },
- {name=> 'sup',       description=> 'less then supremum of $parameter',            condition=> '$value <  $parameter',      parent => 'num',  parameter_type=> 'num', },
- {name=> 'ref',       description=> 'a $parameter reference',                      condition=> 'ref $value eq $parameter',                    parameter_type=> 'str', },
+ {name=> 'min',       description=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter',      parent => 'num',    parameter_type=> 'num', },
+ {name=> 'inf',       description=> 'greater then infimum of $parameter',          condition=> '$value >  $parameter',      parent => 'num',    parameter_type=> 'num', default_value => '1'},
+ {name=> 'max',       description=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter',      parent => 'num',    parameter_type=> 'num', },
+ {name=> 'sup',       description=> 'less then supremum of $parameter',            condition=> '$value <  $parameter',      parent => 'num',    parameter_type=> 'num', },
+ {name=> 'ref',       description=> 'a $parameter reference',                      condition=> 'ref $value eq $parameter',  parent=> 'defined', parameter_type=> 'str', },
  {name=> 'enum',      description=> 'part of list @$parameter',                    condition=> 'reduce {$a || ($b eq $value)} 0, @$parameter', parent => 'str',  parameter_type=> ['ARRAY','str'],},
  {name=> 'enum',      description=> 'part of list @$parameter',                    condition=> 'reduce {$a || ($b == $value)} 0, @$parameter', parent => 'num',  parameter_type=> ['ARRAY','num'],},
 
@@ -33,10 +33,10 @@ our @parametric = (
 
 our @argument = (
  {name=> 'pos',       description=> 'positive number',         parametric_type=> 'min',      parameter_value=> '0' },
- {name=> 'spos',      description=> 'strictly positive number',parametric_type=> 'inf',      parameter_value=> '0' },
- {name=> 'array',     description=> 'ARRAY reference',         parametric_type=> 'ref',      parameter_value=> 'ARRAY' },
- {name=> 'hash',      description=> 'HASH reference',          parametric_type=> 'ref',      parameter_value=> 'HASH' },
- {name=> 'code',      description=> 'CODE reference',          parametric_type=> 'ref',      parameter_value=> 'CODE' },
+ {name=> 'spos',      description=> 'strictly positive number',parametric_type=> 'inf',      parameter_value=> '0',     default_value=> '1', },
+ {name=> 'array',     description=> 'ARRAY reference',         parametric_type=> 'ref',      parameter_value=> 'ARRAY', default_value=> '[]', },
+ {name=> 'hash',      description=> 'HASH reference',          parametric_type=> 'ref',      parameter_value=> 'HASH' , default_value=> '{}', },
+ {name=> 'code',      description=> 'CODE reference',          parametric_type=> 'ref',      parameter_value=> 'CODE' , default_value=> 'sub {}',},
 );
 
 our @property = (

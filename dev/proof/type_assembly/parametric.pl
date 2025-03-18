@@ -19,8 +19,12 @@ my @basic_type_def = (
 my @param_type_def = (
  {name=> 'min',     description=> 'greater or equal then minimum of $parameter', condition=> '$value >= $parameter', parent=> 'num', parameter_type=> 'num',},
  {name=> 'max',     description=> 'less or equal then maximum of $parameter',    condition=> '$value <= $parameter', parent=> 'num', parameter_type=> 'num',},
+ {name=> 'ref',     description=> 'a $parameter reference',                      condition=> 'ref $value eq $parameter',             parameter_type=> 'str', },
 );
 
+my @property_def = (
+  {name=> 'length', description=> 'length of a string',  calculation=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
+);
 
 my $type_store = {};
 map { my $T = assemble_basic($_); $type_store->{ $T->{'name'} } = $T } @basic_type_def;

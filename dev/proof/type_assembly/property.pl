@@ -99,7 +99,7 @@ sub assemble_property {
     return unless ref $type_def eq 'HASH';
     my $property = {%$type_def};
 
-    return "type property def: $type->{name} contains unknown parent type name"
+    return "type property def: $property->{name} contains unknown parent type name"
         unless ref link_lineage( $property );
     return "type property $property->{name} has unknow type: $property->{type}!"
         unless exists $type_store->{ $property->{'type'} };

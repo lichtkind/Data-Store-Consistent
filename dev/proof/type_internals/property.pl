@@ -24,9 +24,9 @@ sub check_named {
     return "$value_name is not not a reference" unless not ref $value;  # basic type not_ref = str
 
     {
-        my $property = 'length';
-        my $param = $param->{$property};
-        my $value_name = "$property of $value_name";
+        my $property_name = 'length';
+        my $param = $param->{$property_name};
+        my $value_name = "$property_name of $value_name";
         my $value = length $value;
 
         {

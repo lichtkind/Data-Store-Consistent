@@ -115,62 +115,50 @@ sub is_str { (defined $_[0] and $_[0] and not ref $_[0]) ? 1 : 0 }
 __END__
 # basic
   ~name
-  ~description       &
+  ~description
    --
-  ~condition      |  &
+  ~condition      |
   ~equality       |
   $default_value  |
-  ~parent         |
-   ==
-   checker_source
-   eq_source
-   checker
-   eq_checker
+  ~parent         |-
 
-# parametric: +
+
+# parametric:
   ~name
   ~description
   ~condition
-  :param_type
+  :parameter_type
    --
+  ~equality       |
   $default_value  |
-  ~parent         |
-   ==
-   checker_source
-   eq_source
-   checker
-   eq_checker
+  ~parent         |-
+
 
 # argument:
   ~name
   ~description
   ~parametric_type
-  $parameter_value
+ :$parameter_value
    --
-  ~parent         |
-   ==
-  %ancestor
-  @~checker_source
-   ~eq_source
-  &checker
-  &eq_checker
 
-# property: +
+
+# property:
   ~name
   ~description
-  ~calculation
- :~type
+ :~calculation
+  ~type
   ~parent
    --
-   ==
- {name=> 'length',    help=> 'an string with length of $param',  calculation=> 'length($value)', parent=> 'str'  ,   type=> 'int' },
 
-# combinator: +
+
+# combinator:
   ~name ... of the combination (UC !)
-  ~description ?
+  ~description
   ~parent
   ~@$default_value
   @~check_code
+  @~eq_code
+  @~default_code
  :@component_pos    name, name
 
   @~eq_properties

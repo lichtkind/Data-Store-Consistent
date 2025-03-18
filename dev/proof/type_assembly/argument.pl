@@ -230,7 +230,6 @@ argument:
   ~parametric_type
   $parameter_value
    --
-  ~parent         |
    ==
   %ancestor
   @~checker_source

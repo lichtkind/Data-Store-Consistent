@@ -105,9 +105,9 @@ __END__
 
 basic
   ~name
+  ~description
    --
-  ~description              &
-  ~condition      |  &
+  ~condition      |
   ~equality       |
   $default_value  |
   ~parent         |

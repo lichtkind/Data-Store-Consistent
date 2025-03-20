@@ -45,32 +45,30 @@ sub check {
         {
             for my $index (0 .. $#$value) {
                 my $value = $value->[$index];
-                my $value_name = "$value_name element $index";
+                my $parameter = $parameter->{'element'};
+                my $value_name = "$value_name element nr. $index";
 
                 return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
                 return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
                 return "$value_name is not number without decimals" unless int($value) == $value;  # basic type: int
 
                 {
-                    my $parameter = $parameter->{'element'};
+                    my $parameter = $parameter->{'min'};
                     {
-                        my $parameter = $parameter->{'min'};
-                        {
-                            my $value = $parameter;
-                            return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
-                            return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
-                        }
-                        return "$value_name is not greater or equal $parameter" unless $value >= $parameter;
+                        my $value = $parameter;
+                        return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
+                        return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
                     }
+                    return "$value_name is not greater or equal $parameter" unless $value >= $parameter;
+                }
+                {
+                    my $parameter = $parameter->{'max'};
                     {
-                        my $parameter = $parameter->{'max'};
-                        {
-                            my $value = $parameter;
-                            return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
-                            return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
-                        }
-                        return "$value_name is not less or equal $parameter" unless $value <= $parameter;
+                        my $value = $parameter;
+                        return "$value_name is not a defined value" unless defined $value;                 # basic type: defined
+                        return "$value_name is not any type of number" unless looks_like_number($value);   # basic type: num
                     }
+                    return "$value_name is not less or equal $parameter" unless $value <= $parameter;
                 }
             }
         }
@@ -83,9 +81,9 @@ sub not_equal {
     $value_name //= "";
     {
         my $property = 'length';
-        my $value_name = "$property of $value_name "; # how get ARRAY at end of this ?
         my $value = @$value;
         my $parameter = @$parameter;
+        my $value_name = "$property of $value_name "; # how get ARRAY at end of this ?
 
         return "$value_name value of '$value' is not equal to '$parameter'" unless $value == $parameter;
     }
@@ -93,7 +91,7 @@ sub not_equal {
         for my $index (0 .. $#$value) {
             my $value = $value->[$index];
             my $parameter = $parameter->[$index];
-            my $value_name = "$value_name element $index";
+            my $value_name = "$value_name element nr. $index";
 
             return "$value_name value of '$value' is not equal to '$parameter'" unless $value == $parameter;
         }

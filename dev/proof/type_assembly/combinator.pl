@@ -22,16 +22,18 @@ my @param_type_def = (
  {name=> 'ref',     description=> 'a $parameter reference',                      condition=> 'ref $value eq $parameter', parent=> 'defined', parameter_type=> 'str',},
 );
 our @arg_type_def = (
- {name=> 'array',     description=> 'ARRAY reference',         parametric_type=> 'ref',      parameter_value=> 'ARRAY', default_value=> '[]',  },
+ {name=> 'array',   description=> 'ARRAY reference',         parametric_type=> 'ref',      parameter_value=> 'ARRAY', default_value=> '[]',  },
 );
 my @property_def = (
   {name=> 'length', description=> 'number of ARRAY elements',  calculation=> '@$value',  parent=> 'array', type=> 'int' },
 );
 my @combinator_def = (
- {name=> 'ARRAY',     description=> 'ARRAY of typed elements', parent=> 'array',   default_value => ['[',']'],
-                      eq_properties=>['length'],  component_pos=> ['element'], component_check=> {index => 1, element => 1},
-                      check_code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],
-                      eq_code=> ['for my $index (0 .. $#value) { my $value = $value[$index];','}'],  },
+ {name=> 'ARRAY',   description=> 'ARRAY of typed elements', parent=> 'array',   default_value => ['[',']'],
+                    eq_properties=>['length'],  components=> ['element'], insert_pos=> {element => -2},
+                    check_code=> ['for my $index (0 .. $#value) {', 'my $value = $value[$index];',
+                                  'my $value_name = "$value_name element nr. $index";','}'],
+                    eq_code=> ['for my $index (0 .. $#value) {','my $value = $value[$index];',
+                               'my $parameter = $parameter[$index];','my $value_name = "$value_name element nr. $index";','}'],  },
 );
 
 
@@ -40,7 +42,7 @@ map { my $T = assemble_basic($_);     $type_store->{ $T->{'name'} } = $T } @basi
 map { my $T = assemble_parametric($_);$type_store->{ $T->{'name'} } = $T } @param_type_def;
 map { my $T = assemble_argument($_);  $type_store->{ $T->{'name'} } = $T } @arg_type_def;
 map { my $T = assemble_property($_);  $type_store->{ $T->{'name'} } = $T } @property_def;
-#map { my $T = assemble_combinator($_);$type_store->{ $T->{'name'} } = $T } @combinator_def;
+map { my $T = assemble_combinator($_);$type_store->{ $T->{'name'} } = $T } @combinator_def;
 #my $type = assemble_full('ARRAY[length:is(3)]<int:min(0),max(255)>');
 
 my $value = [12,13,14];
@@ -93,6 +95,15 @@ sub assemble_combinator {
     my $type_def = shift;
     return unless ref $type_def eq 'HASH';
     my $type = {%$type_def};
+    return "type def of combinator type: $type->{name} contains unknown parent type name"
+        unless ref link_lineage($type);
+# assemble default value
+
+# checker code
+# ['my $parameter = $parameter->{'.$type->{name}.'};',]
+# 'my $parameter = $parameter->{'.$component_name.'};'
+
+# eq checker code
 
     return $type;
 }

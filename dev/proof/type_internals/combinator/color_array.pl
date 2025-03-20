@@ -9,9 +9,8 @@ use warnings;
 use Scalar::Util qw/looks_like_number/;
 
 my $value = [12,13,14];
-say "is value: [12,13,14] a color ?";
 
-say "looks good named" unless check( $value,
+say "value: [12,13,14] is a color !" unless check( $value,
     {ref => 'ARRAY', length => { is => 3 }, ARRAY => {element => { min => 0, max => 255 }}}, 'color array',
 );
 say "got equal check !" unless not_equal( $value, $value, 'color array' );
@@ -42,7 +41,6 @@ sub check {
     }
     {
         my $parameter = $parameter->{'ARRAY'};
-        {
             for my $index (0 .. $#$value) {
                 my $value = $value->[$index];
                 my $parameter = $parameter->{'element'};
@@ -71,7 +69,7 @@ sub check {
                     return "$value_name is not less or equal $parameter" unless $value <= $parameter;
                 }
             }
-        }
+
     }
     return '';
 }
